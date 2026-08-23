@@ -1,0 +1,104 @@
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color:darkseagreen;
+    color:darkslategrey;
+    padding-bottom: 40px;
+}
+
+.icono{
+    margin-right:20px;
+    background-image: url("./images/mapa.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+
+
+.contenedor-titulo{
+    display:flex;
+    align-items: center;
+    background-color:bisque;
+    padding:30px;
+    margin-bottom:20px;
+}
+
+.contenedor-titulo h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.contenedor-titulo p {
+    color: #555;
+    font-size: 0.95rem;
+    margin-top: 2px;
+}
+
+.contenedor-contenido{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    justify-content: center; 
+    background-color:darkseagreen;
+    border-radius:10px;
+}
+
+.contenedor-contenido > h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color:darkslategrey;
+    letter-spacing: 1px;
+}
+
+.contenedor-entidades{
+    width: 100%;
+    margin:20px;
+    padding:10px;
+    border-radius:10px;
+    background-color:azure;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    
+}
+
+.entidad{
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background-color:bisque;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.entidad > div {
+    width: 30%;
+}
+
+.entidad h3 {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+    color: #1b4332;
+}
+
+.entidad p {
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.4;
+}
+

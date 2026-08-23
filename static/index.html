@@ -4,30 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PORTAL DE EMPRENDIMIENTOS</title>
+
+    <link rel="icon" type="image/png" href="./images/mapa.png">
+    <link rel="stylesheet" type="text/css" href="./style.css" />
 </head>
+
 <body>
-    <div>
-        <h1>PORTAL DE EMPRENDIMIENTOS</h1>
-        <p> Red de emprendimientos en tandil</p>
+    <div class="contenedor-titulo">
+        <div class="icono"> </div>
+        <div>
+            <h1>PORTAL DE EMPRENDIMIENTOS</h1>
+            <p> Red centralizada de emprendimientos en Tandil. Para conectar clientes con productos/servicios. </p>
+        </div>
     </div>
-    <div>
+    <div class="contenedor-contenido">
         <h2>ENTIDADES</h2>
-        <div> 
-            <div>
-                <h3>USUARIO</h3>
-                <p>Cualquier persona que se registre en la plataforma</p>
-                <ol>
+        <div class="contenedor-entidades"> 
+            <div class="entidad">
+                <div> 
+                    <h3>USUARIO</h3>
+                    <p>Cualquier persona que se registre en la plataforma</p>
+                </div>
+                <ul>
                     <li>IDUsuario (PK)</li>
                     <li>Contraseña</li>
                     <li>Nombre completo</li>
                     <li>Email</li>
-                    <li>Rol (emprendedor/cliente/administrador)</li>
-                </ol>
+                    <li>Rol: emprendedor/cliente/administrador</li>
+                    <li>IDEmprendimiento (FK): permite tener mas de un usuario relacionado a un emprendimiento</li>
+                </ul>
             </div>
-            <div>
-                <h3>EMPRENDIMIENTO</h3>
-                <p>El negocio registrado por algún usuario emprendedor</p>
-                <ol>
+            <div class="entidad">
+                <div>
+                    <h3>EMPRENDIMIENTO</h3>
+                    <p>El negocio registrado por algún usuario emprendedor</p>
+                </div>
+                <ul>
                     <li>IDEmprendimiento (PK)</li>
                     <li>Nombre</li>
                     <li>Url</li>
@@ -35,14 +47,16 @@
                     <li>Descripcion</li>
                     <li>Logo</li>
                     <li>Contacto</li>
-                    <li>Activo: Boolean (True -> publicaciones en X lapsus de tiempo)
-                    <li>IDUsuario (PK - FK)</li>
-                </ol>
+                    <li>Activo: Boulean (True -> publicaciones en X lapsus de tiempo)</li>
+                </ul>
             </div>
-            <div>
-                <h3>PUBLICACION</h3>
-                <p>lo que publica el emprendedor en la url de su emprendimiento</p>
-                <ol></ol>
+            <div class="entidad">
+                <div> 
+                    <h3>PUBLICACION</h3>
+                    <p>lo que publica el emprendedor en la url de su emprendimiento</p>
+                </div>
+                
+                <ul>
                     <li>IDPub (PK)</li>
                     <li>IDEmprendimiento (PK - FK)</li>
                     <li>Titulo</li>
@@ -51,18 +65,21 @@
                     <li>Tipo: producto/promocion/etc</li>
                     <li>Precio</li>
                     <li>FechaCreacion</li>
-                </ol>
+                </ul>
             </div>
-            <div>
-                <h3>SUSCRIPCION</h3>
-                <p>Relación entre los usuarios normales y los emprendimientos que siguen</p>
-                <ol></ol>
+            <div class="entidad">
+                <div>
+                    <h3>SUSCRIPCION</h3>
+                    <p>Relación entre los usuarios normales y los emprendimientos que siguen</p>
+                </div>
+                
+                <ul>
                     <li>IDSub (PK)</li>
                     <li>IDEmprendimiento</li>
                     <li>FechaSub</li>
                     <li>IDUsuario (FK)</li>
                     <li>IDemprendimiento (FK)</li>
-                </ol>
+                </ul>
             </div>
 
         </div>
