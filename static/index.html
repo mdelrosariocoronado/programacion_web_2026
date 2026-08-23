@@ -3,9 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>PORTAL DE EMPRENDIMIENTOS</title>
 </head>
 <body>
+    <div>
+        <h1>PORTAL DE EMPRENDIMIENTOS</h1>
+        <p> Red de emprendimientos en tandil</p>
+    </div>
+    <div>
+        <h2>ENTIDADES</h2>
+        <div> 
+            <div>
+                <h3>USUARIO</h3>
+                <p>Cualquier persona que se registre en la plataforma</p>
+                <ol>
+                    <li>IDUsuario (PK)</li>
+                    <li>Contraseña</li>
+                    <li>Nombre completo</li>
+                    <li>Email</li>
+                    <li>Rol (emprendedor/cliente/administrador)</li>
+                </ol>
+            </div>
+            <div>
+                <h3>EMPRENDIMIENTO</h3>
+                <p>El negocio registrado por algún usuario emprendedor</p>
+                <ol>
+                    <li>IDEmprendimiento (PK)</li>
+                    <li>Nombre</li>
+                    <li>Url</li>
+                    <li>Rubro</li>
+                    <li>Descripcion</li>
+                    <li>Logo</li>
+                    <li>Contacto</li>
+                    <li>Activo: Boolean (True -> publicaciones en X lapsus de tiempo)
+                    <li>IDUsuario (PK - FK)</li>
+                </ol>
+            </div>
+            <div>
+                <h3>PUBLICACION</h3>
+                <p>lo que publica el emprendedor en la url de su emprendimiento</p>
+                <ol></ol>
+                    <li>IDPub (PK)</li>
+                    <li>IDEmprendimiento (PK - FK)</li>
+                    <li>Titulo</li>
+                    <li>Contenido</li>
+                    <li>Foto/imagen</li>
+                    <li>Tipo: producto/promocion/etc</li>
+                    <li>Precio</li>
+                    <li>FechaCreacion</li>
+                </ol>
+            </div>
+            <div>
+                <h3>SUSCRIPCION</h3>
+                <p>Relación entre los usuarios normales y los emprendimientos que siguen</p>
+                <ol></ol>
+                    <li>IDSub (PK)</li>
+                    <li>IDUsuario</li>
+                    <li>IDEmprendimiento</li>
+                    <li>fechaSub</li>
+                    <li> </li>
+                    <li> </li>
+                    <li> </li>
+                    <li> </li>
+                </ol>
+            </div>
+            <div>
+                <h3> </h3>
+                <p> </p>
+                <ol></ol>
+                    <li> </li>
+                    <li> </li>
+                    <li> </li>
+                    <li> </li>
+                    <li> </li>
+                    <li> </li>
+                    <li> </li>
+                    <li> </li>
+                </ol>
+            </div>
+
+            </div>
+
+
+
+        </div>
+
+
+    </div>
+
+    
     
 </body>
 </html>
