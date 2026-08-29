@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS emprendimiento (
+CREATE TABLE IF NOT EXISTS emprendimientos (
     id_emprendimiento SERIAL PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
     url VARCHAR(255),
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS emprendimiento (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS usuario (
+CREATE TABLE IF NOT EXISTS usuarios (
     id_usuario SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -21,11 +21,11 @@ CREATE TABLE IF NOT EXISTS usuario (
     
     CONSTRAINT fk_usuario_emprendimiento 
         FOREIGN KEY (id_emprendimiento) 
-        REFERENCES emprendimiento(id_emprendimiento) 
+        REFERENCES emprendimientos(id_emprendimiento) 
         ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS publicacion (
+CREATE TABLE IF NOT EXISTS publicaciones (
     id_publicacion SERIAL PRIMARY KEY,
     id_emprendimiento INT NOT NULL,
     titulo VARCHAR(255) NOT NULL,
@@ -35,28 +35,28 @@ CREATE TABLE IF NOT EXISTS publicacion (
     precio NUMERIC(10, 2),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_publicacion_emprendimiento
+    CONSTRAINT fk_publicaciones_emprendimientos
         FOREIGN KEY (id_emprendimiento) 
-        REFERENCES emprendimiento(id_emprendimiento) 
+        REFERENCES emprendimientos(id_emprendimiento) 
         ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS suscripcion (
+CREATE TABLE IF NOT EXISTS suscripciones (
     id_suscripcion SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL,
     id_emprendimiento INT NOT NULL,
     fecha_sub TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
     -- Relación con la tabla usuario
-    CONSTRAINT fk_suscripcion_usuario
+    CONSTRAINT fk_suscripciones_usuario
         FOREIGN KEY (id_usuario) 
-        REFERENCES usuario(id_usuario) 
+        REFERENCES usuarios(id_usuario) 
         ON DELETE CASCADE,
         
     -- Relación con la tabla de emprendimiento
-    CONSTRAINT fk_suscripcion_emprendimiento
+    CONSTRAINT fk_suscripciones_emprendimiento
         FOREIGN KEY (id_emprendimiento) 
-        REFERENCES emprendimiento(id_emprendimiento) 
+        REFERENCES emprendimientos(id_emprendimiento) 
         ON DELETE CASCADE,
         
     -- Evita que un usuario se suscriba varias veces al mismo emprendimiento
