@@ -1,0 +1,8 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "make build"                    # Air llama a make para compilar
+  entrypoint = ["./tmp/my-app"]         # Ejecuta el binario compilado por tu Makefile
+  include_ext = ["go", "templ", "sql"]  # Extensiones que disparan la recompilación
+  exclude_dir = ["tmp", "vendor"]       # Carpetas ignoradas
