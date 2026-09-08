@@ -1,0 +1,18 @@
+# Credenciales y configuración sensible
+.env
+.env.local
+.env.development.local
+
+# Archivos temporales de compilación
+tmp/
+temp/
+/tmp
+/temp
+
+# Binarios compilados de Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+server        # Nombre del binario generado por Makefile
