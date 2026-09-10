@@ -1,17 +1,17 @@
-
 services:
+  # POSTGRESQL
   db:
-    image: postgres:15
-    container_name: tpe_postgres_db
+    image: postgres:16-alpine
+    container_name: postgres_db
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_password}
+      POSTGRES_DB: ${DB_NAME:-mi_base_de_datos}
     ports:
-      - "${DB_PORT_EXTERNAL:-5432}:5432"
+      - "5432:5432"  
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -19,24 +19,27 @@ services:
       retries: 5
       start_period: 5s
 
+
+  # app en GO
+
   web:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: servidor_go_app
     restart: always
     ports:
-      - "8080:8080"
+      - "8080:8080" 
     environment:
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres_password}
+      DB_NAME: ${DB_NAME:-mi_base_de_datos}
       DB_SSLMODE: disable
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
-  postgres_data:
+  pgdata:
