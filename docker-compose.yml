@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   db:
@@ -14,30 +13,30 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test:["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
-      timeoit 5s
+      timeout: 5s
       retries: 5
       start_period: 5s
 
-web:
-  build: 
-    context: .
-    dockerfile: Dockerfile
-  container_name: servidor_go_app
-  restart: always
-  ports:
-    - "8080-8080"
-  enviroment:
-    DB_HOST:
-    DB_PORT:
-    DB_USER: {DB_USER}
-    DB_PASSWORD: ${DB_PASSWORD}
-    DB_NAME: ${DB_NAME}
-    DB_SSLMODE: disable
-  depends_on:
-    db:
-      condition: service_healty
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: servidor_go_app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SSLMODE: disable
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:
