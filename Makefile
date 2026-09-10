@@ -10,10 +10,11 @@ test:
 	@echo " --- Levantando contenedor de Base de Datos"
 	docker compose up -d db
 	@echo " - "
-	@echo "Esperando a que la base de datos este lista para recibir conexion..."
-	@until docker exec tpe_postgres_db pg_isready -U postgres -d DB_WEB > /dev/null 2>&1; do \
+	@echo "Esperando a que la base de datos este lista para recibir conexiones"
+	@until docker compose exec -T db pg_isready > /dev/null 2>&1; do \
 		sleep 1; \
 	done
+
 	@echo " --- Base de datos lista para recibir conexiones"
 	@echo " - "
 	@echo " --- Aplicando migraciones / esquema a la base de datos"
@@ -25,6 +26,6 @@ test:
 	go test -v ./...
 	@echo " - Finalizaron los tests "
 	@echo " --- Limpiando contenedores y volumenes creados en las pruebas "
-	docker-compose down -v --remove-orphans
+	docker compose down -v --remove-orphans
 	@echo " - "
 	@echo " Proceso finalizado del TP2 "
