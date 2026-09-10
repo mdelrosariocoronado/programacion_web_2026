@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:15
@@ -11,6 +13,31 @@ services:
       - "${DB_PORT_EXTERNAL:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeoit 5s
+      retries: 5
+      start_period: 5s
+
+web:
+  build: 
+    context: .
+    dockerfile: Dockerfile
+  container_name: servidor_go_app
+  restart: always
+  ports:
+    - "8080-8080"
+  enviroment:
+    DB_HOST:
+    DB_PORT:
+    DB_USER: {DB_USER}
+    DB_PASSWORD: ${DB_PASSWORD}
+    DB_NAME: ${DB_NAME}
+    DB_SSLMODE: disable
+  depends_on:
+    db:
+      condition: service_healty
 
 volumes:
   postgres_data:
