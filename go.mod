@@ -1,4 +1,4 @@
-module miproyecto.com/servidor-go
+module emprendimientos.com/servidor-go
 
 go 1.22.2
 
