@@ -1,53 +1,126 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
-	"os"
 	"testing"
+	"time"
 
-	"emprendimientos.com/servidor-go/db/sqlc"
-	_ "github.com/lib/pq"
+	db "programacion_web_2026/db/sqlc"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-// Devuelve el valor de la variable o hace fallar el test si no está definida
-func getRequiredEnv(t *testing.T, key string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		t.Fatalf("Error de configuración: la variable de entorno %s no está definida en el .env", key)
+//primer test que aisla la conexión y configuracion inicial con bd
+
+func setUpTestDB( t *testing.T) (*sql.DB, *db.Queries){
+	t.Helper() // para que los logs indiquen la línea del test caller
+
+	dsn := "postgres://user:xyz@localhost:5432/db?sslmode=disable"
+	conection, error := sql.Open("pgx", dsn)
+
+	if error != nil {
+		t.Fatalf(" -- SETUP TEST: error al intentar abrir la conexion: %v", error)
 	}
-	return val
+
+	contexto, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	if error := conection.PingContext(contexto); error!= nil{
+		conection.Close()
+		t.Fatalf(" -- SETUP TEST: la base de datos no responde ante el Ping: %v", error)
+	}
+
+	//CIERRE AUTOMATICO 
+
+	t.Cleanup(func(){
+		conection.Close()
+	})
+
+	return conection, db.New(conection)
+
 }
 
-func setupTestDB(t *testing.T) *sqlc.Queries {
-	// Leemos las variables exportadas por el Makefile desde el .env
-	host := os.Getenv("DB_HOST")
-	if host == "" {
-		host = "localhost" // Valores no sensibles (como host o puerto) sí pueden tener fallback
-	}
-	
-	port := os.Getenv("DB_PORT_EXTERNAL")
-	if port == "" {
-		port = "5432"
-	}
 
-	user := getRequiredEnv(t, "DB_USER")
-	password := getRequiredEnv(t, "DB_PASSWORD")
-	dbname := getRequiredEnv(t, "DB_NAME")
+// suite de pruebas principal CRUD (CREATE, READ, UPDATE, DELETE)
 
-	connStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname,
-	)
+func TestQueries_CRUD(t *testing.T){
+	_, queries := setUpTestDB(t) //el helper declarado arriba que abre y prepara la bd
+	contexto:= context.Background()
 
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		t.Fatalf("Error al abrir la conexión de prueba: %v", err)
-	}
+	var createID int64
 
-	if err := db.Ping(); err != nil {
-		t.Fatalf("No se pudo conectar a la base de datos de prueba: %v", err)
-	}
+	//TEST CREATE Y READ
+	t.Run("Create and Read User", func(t *testing.T){
+		newUser, error := queries.CreateUser( contexto, db.CreateUserParams{
+				NombreCompleto: "Rosario Coronado",
+				Email: "ro@gmail.com",
+		})
+		if error != nil {
+			t.Fatalf("CreateUser fallo: %v", error)
+		}
 
-	return sqlc.New(db)
+		if newUser.ID == 0 {
+			t.Errorf("Se esperaba ID autogenerado que sea mayor a 0 , se obtuvo: %d", newUser.ID)
+		}
+
+		createID = newUser.ID // guarda para las otras pruebas
+
+		fetchedUser, error := queries.GetUserByID(contexto, createID)
+
+		if error != nil {
+
+			t.Fatalf("GetUserByID fallo: %v", error)
+		}
+
+		if fetchedUser.Email != "ro@gmail.com"{
+			t.Error(" Email incorrecto, se esperaba 'ro@gmail.com' pero se obtuvo '$s'", fetchedUser.Email)
+		}
+
+
+
+	})
+
+	//TEST UPDATE
+
+	t.Run("Update User", func(t *testing.T) {
+		error:= queries.UpdateUser(contexto,  db.UpdateUserParams{}
+			ID: createID,
+			NombreCompleto: "M. del Rosario Coronado",
+			Email: "ro@gmail.com",
+		})
+
+		if error!= nil {
+			t.Fatalf("UpdateUser fallo en: %v", error)
+
+		}
+
+		updatedUser, _ := queries.GetUserByID(contexto, createID)
+
+		if updatedUser.NombreCompleto != "M. del Rosario Coronado" {
+			t.Errorf("El nombre completo no se actualizo correctamente")
+		}
+
+
+	})
+
+	//TEST DELETE
+	t.Run("Delete", func (t *testing.T){
+		error:= queries.DeleteUser(contexto, createID)
+
+		if error!= nil {
+			t.Fatalf("DeleteUser fallo: %v", error) 
+		}
+
+		_, error = queries.GetUserByID(contexto, createdID)
+		if !errors.Is(error, sql.ErrNoRows) {
+			t.Errorf("se esperaba sql.ErrNoRows al consultar por el usuario eliminado, se obtuvo: %v", err)
+		}
+
+	})
+
+
 }
+
+
