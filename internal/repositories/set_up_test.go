@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"os"
 	"testing"
 	"time"
 
@@ -16,8 +17,14 @@ import (
 func setUpTestDB( t *testing.T) (*sql.DB, *db.Queries){
 	t.Helper() // para que los logs indiquen la línea del test caller
 
-	dsn := "postgres://user:xyz@localhost:5432/db?sslmode=disable"
-	conection, err := sql.Open("postgres", dsn)
+	// del .env usa las credenciales
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		connStr = "postgres://user:xyz@localhost:5432/db?sslmode=disable"
+	}
+
+
+	conection, err := sql.Open("postgres", connStr)
 
 	if err != nil {
 		t.Fatalf(" -- SETUP TEST: error al intentar abrir la conexion: %v", err)
