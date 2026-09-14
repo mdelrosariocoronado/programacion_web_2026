@@ -118,3 +118,35 @@ func (q *Queries) ListPublicacionesByEmprendimiento(ctx context.Context, idEmpre
 	}
 	return items, nil
 }
+
+const updatePublicacion = `-- name: UpdatePublicacion :exec
+UPDATE publicaciones
+SET 
+    titulo = $2,
+    contenido = $3,
+    imagen_url = $4,
+    tipo = $5,
+    precio = $6
+WHERE id_publicacion = $1
+`
+
+type UpdatePublicacionParams struct {
+	IDPublicacion int32          `json:"id_publicacion"`
+	Titulo        string         `json:"titulo"`
+	Contenido     sql.NullString `json:"contenido"`
+	ImagenUrl     sql.NullString `json:"imagen_url"`
+	Tipo          string         `json:"tipo"`
+	Precio        sql.NullString `json:"precio"`
+}
+
+func (q *Queries) UpdatePublicacion(ctx context.Context, arg UpdatePublicacionParams) error {
+	_, err := q.db.ExecContext(ctx, updatePublicacion,
+		arg.IDPublicacion,
+		arg.Titulo,
+		arg.Contenido,
+		arg.ImagenUrl,
+		arg.Tipo,
+		arg.Precio,
+	)
+	return err
+}

@@ -3,6 +3,16 @@ INSERT INTO publicaciones (id_emprendimiento, titulo, contenido, imagen_url, tip
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id_publicacion, id_emprendimiento, titulo, contenido, imagen_url, tipo, precio, created_at;
 
+-- name: UpdatePublicacion :exec
+UPDATE publicaciones
+SET 
+    titulo = $2,
+    contenido = $3,
+    imagen_url = $4,
+    tipo = $5,
+    precio = $6
+WHERE id_publicacion = $1;
+
 -- name: GetPublicacion :one
 SELECT id_publicacion, id_emprendimiento, titulo, contenido, imagen_url, tipo, precio, created_at
 FROM publicaciones
