@@ -15,4 +15,5 @@ temp/
 *.dll
 *.so
 *.dylib
-server        # Nombre del binario generado por Makefile
+server        
+# Nombre del binario generado por Makefile
