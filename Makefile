@@ -1,4 +1,9 @@
-
+# colores para mayor legibilidad del MAKE TEST
+CYAN    := \033[1;36m
+GREEN   := \033[1;32m
+YELLOW  := \033[1;33m
+RED     := \033[1;31m
+RESET   := \033[0m
 
 # cargo variables del .env 
 -include .env
@@ -15,38 +20,40 @@ DB_URL := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?
 .PHONY: test build clean generate
 
 test:
-	@echo "____________ Generando codigo con SQLC ____________"
+	@printf "$(CYAN)___________________ Generando codigo con SQLC ___________________$(RESET)\n"
 	sqlc generate
-	@echo " "
+	@printf " "
 	
-	@echo "____________ Limpiando contenedores y volumenes previos ____________"
+	@printf "$(YELLOW)___________________ Limpiando contenedores y volumenes previos ___________________$(RESET)\n"
 	docker compose down -v --remove-orphans
-	@echo " "
+	@printf " "
 
-	@echo "____________ Levantando contenedor de Base de Datos ____________"
+	@printf "$(CYAN)___________________ Levantando contenedor de Base de Datos ___________________$(RESET)\n"
 	docker compose up -d db
-	@echo "Esperando a que la base de datos este lista para recibir conexiones"
+	@printf "Esperando a que la base de datos este lista para recibir conexiones"
 	@until docker compose exec -T db pg_isready -U $(DB_USER) -d $(DB_NAME) > /dev/null 2>&1; do \
 		sleep 1; \
 	done
 
-	@echo "- Base de datos lista para recibir conexiones"
-	@echo " "
+	@printf "$(GREEN)- Base de datos lista para recibir conexiones $(RESET)\n"
+	@printf " "
 
-	@echo "____________ Aplicando migraciones / esquema a la base de datos ____________"
+	@printf "$(YELLOW)___________________ Aplicando migraciones / esquema a la base de datos ___________________$(RESET)\n"
 	atlas migrate apply --dir "file://db/migrations" --url "$(DB_URL)" 
-	@echo " "
+	@printf " "
 
-	@echo "____________ Ejecucion de Tests ____________"
-	@echo " Corriendo test con paquete de testing de GO "
+	@printf "$(CYAN)___________________ EJECUCION DE TESTS ___________________$(RESET)\n"
+	@printf " Corriendo test con paquete de testing de GO "
 
-	go test -v ./...
+	go test -v ./... | sed \
+		-e "s/PASS/$$(printf '$(GREEN)PASS$(RESET)')/g" \
+		-e "s/FAIL/$$(printf '$(RED)FAIL$(RESET)')/g"
 
-	@echo " - Finalizaron los tests "
-	@echo " "
+	@printf "$(CYAN) - Finalizaron los tests $(RESET)\n"
+	@printf " "
 
-	@echo "____________ Limpiando contenedores y volumenes creados en las pruebas ____________"
+	@printf "$(YELLOW)________________________ Limpiando contenedores y volumenes creados en las pruebas ____________$(RESET)\n"
 	docker compose down -v --remove-orphans
-	@echo " "
+	@printf " "
 
-	@echo "____________ Proceso finalizado del TP2 ____________"
+	@printf "$(GREEN)________________________ Proceso finalizado del TP2 ____________$(RESET)\n"
