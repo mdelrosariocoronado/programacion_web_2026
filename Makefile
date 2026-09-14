@@ -19,7 +19,7 @@ test:
 	@echo " "
 
 	@echo "============ Aplicando migraciones / esquema a la base de datos ============"
-	atlas migrate apply --dir "file://db/migrations" --url "postgres://postgres:postgres_password@localhost:5432/mi_base_de_datos?sslmode=disable" || true
+	atlas migrate apply --dir "file://db/migrations" --url "postgres://user:xyz@localhost:5432/db?sslmode=disable" || true
 	@echo " "
 
 	@echo "============ Ejecucion de Tests ============"
