@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createSuscripcion = `-- name: CreateSuscripcion :one
@@ -47,6 +48,29 @@ func (q *Queries) DeleteSuscripcion(ctx context.Context, arg DeleteSuscripcionPa
 	return err
 }
 
+const getSuscripcionByUserAndEmprendimiento = `-- name: GetSuscripcionByUserAndEmprendimiento :one
+SELECT id_suscripcion, id_usuario, id_emprendimiento, fecha_sub
+FROM suscripciones
+WHERE id_usuario = $1 AND id_emprendimiento = $2
+`
+
+type GetSuscripcionByUserAndEmprendimientoParams struct {
+	IDUsuario        int32 `json:"id_usuario"`
+	IDEmprendimiento int32 `json:"id_emprendimiento"`
+}
+
+func (q *Queries) GetSuscripcionByUserAndEmprendimiento(ctx context.Context, arg GetSuscripcionByUserAndEmprendimientoParams) (Suscripcione, error) {
+	row := q.db.QueryRowContext(ctx, getSuscripcionByUserAndEmprendimiento, arg.IDUsuario, arg.IDEmprendimiento)
+	var i Suscripcione
+	err := row.Scan(
+		&i.IDSuscripcion,
+		&i.IDUsuario,
+		&i.IDEmprendimiento,
+		&i.FechaSub,
+	)
+	return i, err
+}
+
 const listSuscripcionesByUsuario = `-- name: ListSuscripcionesByUsuario :many
 SELECT id_suscripcion, id_usuario, id_emprendimiento, fecha_sub
 FROM suscripciones
@@ -79,4 +103,21 @@ func (q *Queries) ListSuscripcionesByUsuario(ctx context.Context, idUsuario int3
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateSuscripcion = `-- name: UpdateSuscripcion :exec
+UPDATE suscripciones
+SET fecha_sub = $3
+WHERE id_usuario = $1 AND id_emprendimiento = $2
+`
+
+type UpdateSuscripcionParams struct {
+	IDUsuario        int32        `json:"id_usuario"`
+	IDEmprendimiento int32        `json:"id_emprendimiento"`
+	FechaSub         sql.NullTime `json:"fecha_sub"`
+}
+
+func (q *Queries) UpdateSuscripcion(ctx context.Context, arg UpdateSuscripcionParams) error {
+	_, err := q.db.ExecContext(ctx, updateSuscripcion, arg.IDUsuario, arg.IDEmprendimiento, arg.FechaSub)
+	return err
 }
