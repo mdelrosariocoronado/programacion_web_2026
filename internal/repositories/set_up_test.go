@@ -14,7 +14,7 @@ import (
 
 //primer test que aisla la conexión y configuracion inicial con bd
 
-func setUpTestDB( t *testing.T) (*sql.DB, *db.Queries){
+func setUpTestDB(t *testing.T) (*sql.DB, *db.Queries) {
 	t.Helper() // para que los logs indiquen la línea del test caller
 
 	// del .env usa las credenciales
@@ -22,7 +22,6 @@ func setUpTestDB( t *testing.T) (*sql.DB, *db.Queries){
 	if connStr == "" {
 		connStr = "postgres://user:xyz@localhost:5432/db?sslmode=disable"
 	}
-
 
 	conection, err := sql.Open("postgres", connStr)
 
@@ -34,14 +33,14 @@ func setUpTestDB( t *testing.T) (*sql.DB, *db.Queries){
 
 	defer cancel()
 
-	if err := conection.PingContext(contexto); err!= nil{
+	if err := conection.PingContext(contexto); err != nil {
 		conection.Close()
 		t.Fatalf(" -- SETUP TEST: la base de datos no responde ante el Ping: %v", err)
 	}
 
-	//CIERRE AUTOMATICO 
+	//CIERRE AUTOMATICO
 
-	t.Cleanup(func(){
+	t.Cleanup(func() {
 		conection.Close()
 	})
 

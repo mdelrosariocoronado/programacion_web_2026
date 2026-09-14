@@ -15,7 +15,7 @@ func TestQueries_Emprendimientos_CRUD(t *testing.T) {
 
 	var empID int32
 
-	// Create y Read 
+	// Create y Read
 	t.Run("Create and Read Emprendimiento", func(t *testing.T) {
 		emp, err := queries.CreateEmprendimiento(contexto, db.CreateEmprendimientoParams{
 			Nombre:      "Café Central",
