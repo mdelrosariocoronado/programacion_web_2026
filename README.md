@@ -1,6 +1,7 @@
 # Trabajo practico N°2
 ## Integrantes del Equipo
-*   Maria Del Rosario Coronado
+
+*   María Del Rosario Coronado
 *   Brisa Fernandez Lema
 *   Benjamín Knudsen
   
@@ -8,8 +9,12 @@
 
 Antes de ejecutar este proyecto, asegúrate de tener instalado el siguiente software en tu computadora:
 
-*   [Go (Golang)](https://go.dev/dl/) - Lenguaje de programación necesario para levantar el servidor.
-*   [Git](https://git-scm.com/downloads) - Para clonar el repositorio.
+* **[Go](https://go.dev/dl/)** (v1.22 o superior)
+* **[Docker](https://docs.docker.com/get-docker/) & Docker Compose** (con el servicio iniciado)
+* **[Atlas CLI](https://atlasgo.io/getting-started/)** (para la aplicación de migraciones DDL)
+* **[Git](https://git-scm.com/downloads)**
+* *(Opcional)* **[sqlc](https://docs.sqlc.dev/en/latest/overview/install.html)** (el código ya se encuentra generado en `db/sqlc/`)
+
 
 ## Instalación y Ejecución Local
 
@@ -23,12 +28,21 @@ Descarga el código fuente a tu computadora ejecutando:
 Ingresa a la carpeta principal que se acaba de descargar:
 `cd prog_web`
 
-**3. Iniciar el servidor**
+**3.Configura las variables de entorno**
+`cp .env.example .env`
+
+**4. Ejecución de Pruebas Automatizadas**
+El proyecto incluye un pipeline automatizado en el `Makefile` que levanta la base de datos en Docker, aplica el esquema DDL con Atlas, compila las consultas con `sqlc` y corre toda la suite de tests unitarios y de integración:
+`make test`
+
+## Ejecución del Servidor Web, CORRESPONDIENTE AL TP1
+
+**Iniciar el servidor**
 Ejecuta el archivo principal de Go para levantar el servidor web:
-`go run .`
+`go run .` O `go run cmd/server/main.go`
 *(Alternativamente, puedes usar `go run main.go`)*
 
-**4. Visualizar la página**
+**Visualizar la página**
 Abre tu navegador web de preferencia y dirígete a la siguiente dirección:
 `http://localhost:8080`
 
