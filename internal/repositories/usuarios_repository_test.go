@@ -11,8 +11,6 @@ import (
 	db "emprendimientos.com/servidor-go/db/sqlc"
 )
 
-
-
 // suite de pruebas principal CRUD (CREATE, READ, UPDATE, DELETE) de USUARIO
 
 func TestQueries_CRUD(t *testing.T){
@@ -53,6 +51,18 @@ func TestQueries_CRUD(t *testing.T){
 
 
 	})
+
+	t.Run("List Usuarios", func(t *testing.T) {
+		lista, err := queries.ListUsuarios(contexto)
+		if err != nil {
+			t.Fatalf("ListUsuarios falló: %v", err)
+		}
+
+		if len(lista) == 0 {
+			t.Errorf("Se esperaba al menos 1 usuario en la lista")
+		}
+	})
+
 
 	//TEST UPDATE
 
