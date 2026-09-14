@@ -57,3 +57,13 @@ test:
 	@printf " "
 
 	@printf "$(GREEN)________________________ Proceso finalizado del TP2 ____________$(RESET)\n"
+
+run:
+	@printf "$(GREEN)Levantando base de datos...$(RESET)\n"
+	docker compose up -d db
+	@until docker compose exec -T db pg_isready -U $(DB_USER) -d $(DB_NAME) > /dev/null 2>&1; do \
+		sleep 1; \
+	done
+	atlas migrate apply --dir "file://db/migrations" --url "$(DB_URL)"
+	@echo "Iniciando servidor..."
+	go run cmd/server/main.go

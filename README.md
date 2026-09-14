@@ -39,12 +39,11 @@ El proyecto incluye un pipeline automatizado en el `Makefile` que levanta la bas
 
 **Iniciar el servidor**
 Ejecuta el archivo principal de Go para levantar el servidor web:
-`go run .` O `go run cmd/server/main.go`
-*(Alternativamente, puedes usar `go run main.go`)*
+`make run` 
 
-**Visualizar la página**
+**Visualizar la página del TP1**
 Abre tu navegador web de preferencia y dirígete a la siguiente dirección:
-`http://localhost:8080`
+`http://localhost:8080/static/`
 
 ---
 *Proyecto incremental desarrollando una web completa, para la materia de Programación Web de la carrera de Ingenieria en Sistemas, UNICEN.*
