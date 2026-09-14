@@ -4,6 +4,22 @@
 *   María Del Rosario Coronado
 *   Brisa Fernandez Lema
 *   Benjamín Knudsen
+
+
+## Documentación (Persistencia)
+La aplicación modela una red de emprendimientos locales en tandil.
+
+### Modelo de Datos
+
+* **`emprendimientos`:** Entidad principal que almacena el perfil del negocio, rubro y datos de contacto.
+* **`usuarios`:** Clientes y emprendedores con control de acceso por roles (`administrador`, `emprendedor`, `cliente`).
+* **`publicaciones`:** Contenido publicado por cada emprendimiento (tipo `producto`, `promocion`, `servicio` u `otro`), vinculado mediante clave foránea con eliminación en cascada (`ON DELETE CASCADE`).
+* **`suscripciones`:** Tabla intermedia que materializa la relación N:M entre usuarios y los emprendimientos que siguen.
+
+### Herramientas y Patrones
+* **SQL Directo con `sqlc`:** Se adoptó `sqlc` para compilar consultas SQL puras a código Go seguro, evitando la discordancia de impedancia y la sobrecarga de un ORM pesado.
+* **Migraciones con Atlas:** El esquema se versiona mediante scripts DDL fechados en `db/migrations/`, garantizando reproducibilidad y control de versiones en el motor.
+* **Entorno con Docker Compose:** La base de datos se ejecuta de forma aislada y estandarizada mediante contenedores.
   
 ## Requisitos Previos
 
@@ -43,7 +59,9 @@ Ejecuta el archivo principal de Go para levantar el servidor web:
 
 **Visualizar la página del TP1**
 Abre tu navegador web de preferencia y dirígete a la siguiente dirección:
-`http://localhost:8080/static/`
+`http://localhost:8080/static/` para conocer mas sobre las entidades y sus atributos.
+
+
 
 ---
 *Proyecto incremental desarrollando una web completa, para la materia de Programación Web de la carrera de Ingenieria en Sistemas, UNICEN.*
