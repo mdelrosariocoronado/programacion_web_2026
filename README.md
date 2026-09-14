@@ -1,5 +1,5 @@
 # Trabajo practico N°2
-## Integrantes del Equipo
+## Integrantes del grupo
 
 *   María Del Rosario Coronado
 *   Brisa Fernandez Lema
