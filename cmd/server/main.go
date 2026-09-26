@@ -45,13 +45,13 @@ func main() {
 	// DATOS
 
 	queries := sqlc.New(db)
-	userRepo := repositories.NewUserRepository(queries)
+	usuarioRepo := repositories.NewUserRepository(queries)
 
 	//LOGICA
-	userService := services.NewUserService(userRepo)
+	usuarioService := services.NewUserService(usuarioRepo)
 
 	// PRESENTACION
-	userHandler := handlers.NewUserHandler(userService)
+	usuarioHandler := handlers.NewUserHandler(usuarioService)
 
 	//-- manejo del enrutamiento (mux es para el mapeo de rutas especificas para la capa de presentacion)
 
@@ -60,10 +60,10 @@ func main() {
 	fileServer := http.FileServer(http.Dir("./static"))
 	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
-	router.HandleFunc("/", userHandler.HandleUsers)
+	router.HandleFunc("/", usuarioHandler.HandleUsers)
 
 	// endpoint del formulario. verificar si lo dejamos al formulario
-	router.HandleFunc("/users", userHandler.HandleUsers)
+	router.HandleFunc("/users", usuarioHandler.HandleUsers)
 
 	//Healthcheck endpoint
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
