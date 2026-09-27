@@ -82,13 +82,14 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		http.Error(w, "error interno del servidor", http.StatusInternalServerError)
+		return
 		
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated) // mensaje 201
 	json.NewEncoder(w).Encode(usuario)
-	w.Write([]byte(`{"mensaje":"Usuario creado"}`))
 }
 
 // metodo con GET en api de usuarios cin id
@@ -160,8 +161,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 			errors.Is(err, services.ErrEmailDuplicado) ||
 			errors.Is(err, services.ErrFormatoInvalidoEmail) ||
 			errors.Is(err, services.ErrNombreVacio) ||
-			errors.Is(err, services.ErrRolInvalido)  || 
-			 {
+			errors.Is(err, services.ErrRolInvalido) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
