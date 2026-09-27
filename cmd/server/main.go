@@ -40,13 +40,18 @@ func main() {
 	}
 	fmt.Println("--- Conexion exitosa a PostgreSql")
 
-	//--Manejo de capas y su logica
+	//--Manejo de capas y su logica  
 
-	// USUARIOS
+	// USUARIOS -inyeccion de dependencias
 	queries := sqlc.New(db)
 	usuarioRepo := repositories.NewUserRepository(queries)
 	usuarioService := services.NewUserService(usuarioRepo)
 	usuarioHandler := handlers.NewUserHandler(usuarioService)
+
+	//SUSCRIPCION -inyeccion de dependencias
+	suscripcionRepo := repositories.NewSuscripcionRepository(queries)
+	suscripcionService := services.NewSuscripcionService(suscripcionRepo)
+	suscripcionHandler := handlers.NewSuscripcionHandler(suscripcionService)
 
 	// EMPRENDIMIENTOS
 	empRepo := repositories.NewEmprendimientoRepository(queries)
@@ -81,15 +86,17 @@ func main() {
 	router.HandleFunc("PUT /api/emprendimientos/{id}", empHandler.Update)
 	router.HandleFunc("DELETE /api/emprendimientos/{id}", empHandler.Delete)
 
-	router.HandleFunc("/", usuarioHandler.HandleUsers)
-	router.HandleFunc("/users", usuarioHandler.HandleUsers)
-
 	// endpoints para Usuarios
 	router.HandleFunc("POST /api/usuarios", usuarioHandler.Create)
 	router.HandleFunc("GET /api/usuarios", usuarioHandler.List)
 	router.HandleFunc("GET /api/usuarios/{id}", usuarioHandler.GetByID)
 	router.HandleFunc("PUT /api/usuarios/{id}", usuarioHandler.Update)
 	router.HandleFunc("DELETE /api/usuarios/{id}", usuarioHandler.Delete)
+
+	// --- RUTAS DE SUSCRIPCIONES (Relación N:M) ---
+	router.HandleFunc("POST /api/suscripciones", suscripcionHandler.Create) // 201 Created
+	router.HandleFunc("GET /api/usuarios/{id}/suscripciones", suscripcionHandler.ListByUser)// 200 OK
+	router.HandleFunc("DELETE /api/suscripciones", suscripcionHandler.Delete)// 204 No Content
 
 	//ARRANCAR EL SV HTTP
 	port := getEnv("PORT", "8080")
@@ -98,6 +105,8 @@ func main() {
 	if error := http.ListenAndServe(":"+port, router); error != nil {
 		log.Fatalf("Error al iniciar el servidor: %v", error)
 	}
+
+
 
 }
 
