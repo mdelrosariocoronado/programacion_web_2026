@@ -91,7 +91,7 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"mensaje":"Usuario creado"}`))
 }
 
-// metodo con GET en api de usuarios
+// metodo con GET en api de usuarios cin id
 
 func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request){
 
@@ -115,4 +115,17 @@ func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request){
 	w.WriteHeader(http.StatusOK) // 200, se acepto
 	json.NewEncoder(w).Encode(usuario)
 
+}
+
+// listar los usuarios
+func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
+	usuarios, err := h.service.ListarUsuarios(r.Context())
+	if err != nil {
+		http.Error(w, "HUbo un error al obtener usuarios", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK) // 200 esta bien
+	json.NewEncoder(w).Encode(usuarios)
 }
