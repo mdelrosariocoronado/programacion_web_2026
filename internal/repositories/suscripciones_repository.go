@@ -16,11 +16,11 @@ type SuscripcionRepo interface {
 	//GetSuscripcionByUserAndEmprendimiento 
 	GetByUserEmprendim(ctx context.Context, id_user int32, id_emp int32) (db.Suscripcione, error)
 	//ListSuscripcionesByUsuario
-	List(ctx context.Context) ([]db.Suscripcione, error)
-	//UpdateSuscripcion
-	Update(ctx context.Context) ([]db.Suscripcione, error)  //solo debe dar error, no se pueden modificar, solo se dan de alta y de baja es N:M
+	List(ctx context.Context, idUsuario int32) ([]db.Suscripcione, error) //UpdateSuscripcion
+	//updateSuscripcion
+	Update(ctx context.Context, params db.UpdateSuscripcionParams) error
 	//DeleteSuscripcion 
-	Delete(ctx context.Context, id int32) error
+	Delete(ctx context.Context, params db.DeleteSuscripcionParams) error
 
 }
 
@@ -52,7 +52,7 @@ func (r *suscRepository) List(ctx context.Context, id_usuario int32) ([]db.Suscr
 	return r.queries.ListSuscripcionesByUsuario(ctx, id_usuario)
 }
 
-func (r *suscRepository) Update(ctx context.Context, params db.UpdateSuscripcionParams) (db.Suscripcione, error) {
+func (r *suscRepository) Update(ctx context.Context, params db.UpdateSuscripcionParams) error {
 	return r.queries.UpdateSuscripcion(ctx, params)
 }
 
