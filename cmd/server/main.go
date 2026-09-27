@@ -44,9 +44,9 @@ func main() {
 
 	// USUARIOS
 	queries := sqlc.New(db)
-	userRepo := repositories.NewUserRepository(queries)
-	userService := services.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	usuarioRepo := repositories.NewUserRepository(queries)
+	usuarioService := services.NewUserService(usuarioRepo)
+	usuarioHandler := handlers.NewUserHandler(usuarioService)
 
 	// EMPRENDIMIENTOS
 	empRepo := repositories.NewEmprendimientoRepository(queries)
@@ -56,6 +56,8 @@ func main() {
 	//-- manejo del enrutamiento (mux es para el mapeo de rutas especificas para la capa de presentacion)
 
 	router := http.NewServeMux()
+
+	//servidor para archivos estaticos
 
 	fileServer := http.FileServer(http.Dir("./static"))
 	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
@@ -72,10 +74,6 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	//servidor para archivos estaticos
-	fileServer := http.FileServer(http.Dir("./static"))
-	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
-
 	// Rutas de Emprendimientos
 	router.HandleFunc("POST /api/emprendimientos", empHandler.Create)
 	router.HandleFunc("GET /api/emprendimientos", empHandler.GetAll)
@@ -83,8 +81,8 @@ func main() {
 	router.HandleFunc("PUT /api/emprendimientos/{id}", empHandler.Update)
 	router.HandleFunc("DELETE /api/emprendimientos/{id}", empHandler.Delete)
 
-	router.HandleFunc("/", userHandler.HandleUsers)
-	router.HandleFunc("/users", userHandler.HandleUsers)
+	router.HandleFunc("/", usuarioHandler.HandleUsers)
+	router.HandleFunc("/users", usuarioHandler.HandleUsers)
 
 	// endpoints para Usuarios
 	router.HandleFunc("POST /api/usuarios", usuarioHandler.Create)
