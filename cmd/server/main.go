@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/lib/pq" // Driver de PostgreSQL
+	_ "github.com/lib/pq" // driver de PostgreSQL
 
 	"emprendimientos.com/servidor-go/db/sqlc"
 	"emprendimientos.com/servidor-go/internal/handlers"
@@ -24,7 +24,7 @@ func main() {
 	dbPass := getEnv("DB_PASSWORD", "xyz")
 	dbName := getEnv("DB_NAME", "db")
 
-	// construir dns
+	// construir dns para interpretar los drivers de postgre
 	dns := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPass, dbName)
 
 	//conectar a postgresql
@@ -57,19 +57,25 @@ func main() {
 
 	router := http.NewServeMux()
 
-	fileServer := http.FileServer(http.Dir("./static"))
-	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
-
+	//captura cualquier ruta que no coincida con una definida -> ponemos el inicio estatico
 	router.HandleFunc("/", usuarioHandler.HandleUsers)
 
-	// endpoint del formulario. verificar si lo dejamos al formulario
-	router.HandleFunc("/users", usuarioHandler.HandleUsers)
-
-	//Healthcheck endpoint
+	//Healthcheck endpoint para verificar que http responde peticiones, lo usamos con docker tambien
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
+
+	//servidor para archivos estaticos
+	fileServer := http.FileServer(http.Dir("./static"))
+	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
+
+	// endpoints para Usuarios
+	router.HandleFunc("POST /api/usuarios", usuarioHandler.Create)
+	router.HandleFunc("GET /api/usuarios", usuarioHandler.List)
+	router.HandleFunc("GET /api/usuarios/{id}", usuarioHandler.GetByID)
+	router.HandleFunc("PUT /api/usuarios/{id}", usuarioHandler.Update)
+	router.HandleFunc("DELETE /api/usuarios/{id}", usuarioHandler.Delete)
 
 	//ARRANCAR EL SV HTTP
 	port := getEnv("PORT", "8080")
