@@ -124,7 +124,7 @@ func (h *EmprendimientoHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// Helper para extraer y convertir el parámetro {id} de la URL en Go 1.22
+// Helper para extraer y convertir el parámetro {id} de la URL
 func parseID(r *http.Request) (int32, error) {
 	idStr := r.PathValue("id")
 	val, err := strconv.Atoi(idStr)

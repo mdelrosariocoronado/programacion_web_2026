@@ -26,7 +26,7 @@ func TestEmprendimientoHandler_Validaciones(t *testing.T) {
 
 	t.Run("GetByID falla con ID no numérico", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/emprendimientos/abc", nil)
-		// Simular valor extraído por ServeMux de Go 1.22
+		// Simular valor extraído por ServeMux
 		req.SetPathValue("id", "abc")
 		rr := httptest.NewRecorder()
 
