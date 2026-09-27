@@ -13,7 +13,11 @@ RUN go mod download
 COPY . .
 
 # genera el ejecutable nativo compilado de forma estática
+<<<<<<< HEAD
 RUN CGO_ENABLED=0 go build -o /app/api ./cmd/server
+=======
+RUN CGO_ENABLED=0 go build -o /app/api ./cmd/api
+>>>>>>> tp3-ro
 
 # IMAGEN FINAL (EJECUCION)_____________________________
 

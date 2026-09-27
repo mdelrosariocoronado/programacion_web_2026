@@ -1,0 +1,1 @@
+para evita copiar binarios, secrets o node_modules a la imagen 

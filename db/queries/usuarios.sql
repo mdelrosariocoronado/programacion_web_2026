@@ -8,6 +8,14 @@ SELECT id_usuario, nombre_completo, email, clave, rol, id_emprendimiento, create
 FROM usuarios
 WHERE id_usuario = $1;
 
+<<<<<<< HEAD
+=======
+-- name: GetUsuarioByEmail :one 
+SELECT id_usuario, nombre_completo, email, clave, rol, id_emprendimiento, created_at
+FROM usuarios
+WHERE email = $1;
+
+>>>>>>> tp3-ro
 -- name: ListUsuarios :many
 SELECT id_usuario, nombre_completo, email, clave, rol, id_emprendimiento, created_at
 FROM usuarios;
