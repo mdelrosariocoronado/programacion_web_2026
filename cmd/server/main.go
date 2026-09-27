@@ -17,20 +17,27 @@ import (
 
 func main() {
 
-	// configurac de base de datos desde var de entorno
-	dbHost := getEnv("DB_HOST", "localhost")
-	dbPort := getEnv("DB_PORT", "5432")
-	dbUser := getEnv("DB_USER", "user")
-	dbPass := getEnv("DB_PASSWORD", "xyz")
-	dbName := getEnv("DB_NAME", "db")
+	dbURL := os.Getenv("DATABASE_URL")
+	//  base de datos desde var de entorno para configurar dbURL
 
-	// construir dns para interpretar los drivers de postgre
-	dns := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPass, dbName)
+	if dbURL == "" {
+		dbHost := getEnv("DB_HOST", "localhost")
+		dbPort := getEnv("DB_PORT", "5432")
+		dbUser := getEnv("DB_USER", "user")
+		dbPass := getEnv("DB_PASSWORD", "xyz")
+		dbName := getEnv("DB_NAME", "db")
+		dbSSL := getEnv("DB_SSLMODE", "disable")
+
+		dbURL = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+			dbHost, dbPort, dbUser, dbPass, dbName, dbSSL)
+
+	}
+	
 
 	//conectar a postgresql
-	db, error := sql.Open("postgres", dns)
-	if error != nil {
-		log.Fatalf("Error configurando la base de datos: %v", error)
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatalf("Error configurando la base de datos: %v", err)
 	}
 	defer db.Close()
 
