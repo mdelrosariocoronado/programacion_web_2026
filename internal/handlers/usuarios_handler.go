@@ -129,3 +129,65 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK) // 200 esta bien
 	json.NewEncoder(w).Encode(usuarios)
 }
+
+
+// PUT /api/usuarios/{id}
+func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id") //para parsear rutas  como /api/usuarios/{id}
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		http.Error(w, "Identificador de usuario inválido", http.StatusBadRequest)
+		return
+	}
+
+	var req UpdateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Cuerpo de solicitud JSON inválido", http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.ActualizarUsuario(
+		r.Context(),
+		int32(id),
+		req.NombreCompleto,
+		req.Email,
+		req.Clave,
+		req.Rol,
+		req.IdEmprendimiento,
+	)
+	if err != nil {
+		if errors.Is(err, services.ErrClave) ||
+			errors.Is(err, services.ErrEmailDuplicado) ||
+			errors.Is(err, services.ErrFormatoInvalidoEmail) ||
+			errors.Is(err, services.ErrNombreVacio) ||
+			errors.Is(err, services.ErrRolInvalido)  || 
+			 {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "Error al actualizar el usuario", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK) // 200
+	json.NewEncoder(w).Encode(map[string]string{"mensaje": "Usuario actualizado exitosamente"})
+}
+
+// DELETE /api/usuarios/{id}
+func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		http.Error(w, "Identificador de usuario inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.EliminarUsuario(r.Context(), int32(id)); err != nil {
+		http.Error(w, "Error al eliminar el usuario", http.StatusInternalServerError)
+		return
+	}
+
+	// 204 No Content no lleva body en la respuesta
+	w.WriteHeader(http.StatusNoContent)
+}
