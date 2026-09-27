@@ -2,8 +2,6 @@ package handlers
 
 // VALIDA HTTP, decodifica JSON, llama al service de usuario, escribe JSON y status code
 
-
-
 //lee JSON r.BOdy
 
 //MANEJO DE PATH VAALUE
@@ -12,11 +10,11 @@ package handlers
 
 //mapear resultado http
 
-
 import (
-	"net/http"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"strconv"
 
 	"emprendimientos.com/servidor-go/internal/services"
 )
@@ -93,4 +91,28 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"mensaje":"Usuario creado"}`))
 }
 
+// metodo con GET en api de usuarios
 
+func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request){
+
+	//con go 1.22 r.pathvaues extrae partes del path
+	id_usuario := r.PathValue("id")
+	id, err := strconv.ParseInt(id_usuario, 10, 32)
+	if err != nil {
+		http.Error(w, " ID de usuario invalido", http.StatusBadRequest)
+		return
+	}
+
+	usuario, err := h.service.ObtenerUsuario(r.Context(), int32(id))
+
+	if err!= nil {
+		//usuario que no esta en el registro, se tira error especial por  sqlc
+		http.Error(w, "El usuario ingresado no esta registrado", http.StatusNotFound) // error 404
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK) // 200, se acepto
+	json.NewEncoder(w).Encode(usuario)
+
+}
