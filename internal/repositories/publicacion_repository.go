@@ -27,12 +27,12 @@ func NewPublicacionRepository(q *db.Queries) PublicacionRepo {
 	}
 }
 
-// Create inserta una nueva publicación
+// Create inserta una nueva publicacion
 func (r *publicacionRepository) Create(ctx context.Context, params db.CreatePublicacionParams) (db.Publicacione, error) {
 	return r.queries.CreatePublicacion(ctx, params)
 }
 
-// GetByID busca una publicación por su ID
+// GetByID busca una publicacion por su ID
 func (r *publicacionRepository) GetByID(ctx context.Context, id int32) (db.Publicacione, error) {
 	return r.queries.GetPublicacion(ctx, id)
 }
@@ -42,12 +42,12 @@ func (r *publicacionRepository) ListByEmprendimiento(ctx context.Context, idEmpr
 	return r.queries.ListPublicacionesByEmprendimiento(ctx, idEmprendimiento)
 }
 
-// Update modifica los datos de una publicación existente
+// Update modifica los datos de una publicacion existente
 func (r *publicacionRepository) Update(ctx context.Context, params db.UpdatePublicacionParams) error {
 	return r.queries.UpdatePublicacion(ctx, params)
 }
 
-// Delete elimina una publicación por su ID
+// Delete elimina una publicacion por su ID
 func (r *publicacionRepository) Delete(ctx context.Context, id int32) error {
 	return r.queries.DeletePublicacion(ctx, id)
 }
