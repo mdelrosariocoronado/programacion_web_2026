@@ -9,10 +9,12 @@ import (
 	db "emprendimientos.com/servidor-go/db/sqlc"
 )
 
-// TEST CRUD en PUBLICACIONES
-func TestQueries_Publicaciones_CRUD(t *testing.T) {
+// TestPublicacionRepository_CRUD valida el ciclo completo CRUD y reglas de integridad para PublicacionRepo
+func TestPublicacionRepository_CRUD(t *testing.T) {
 	_, queries := setUpTestDB(t) // helper de setup_test.go
 	contexto := context.Background()
+
+	repo := NewPublicacionRepository(queries)
 
 	// emprendimiento para cumplir FK
 	emprendimiento, err := queries.CreateEmprendimiento(contexto, db.CreateEmprendimientoParams{
@@ -20,42 +22,43 @@ func TestQueries_Publicaciones_CRUD(t *testing.T) {
 		Rubro:  "peluqueria",
 	})
 	if err != nil {
-		t.Fatalf("setup autor falló: %v", err)
+		t.Fatalf("setup emprendimiento fallo: %v", err)
 	}
 
-	var createPublicacionID int64
+	var createPublicacionID int32
 
 	// CREATE Y READ
 	t.Run("Create and Read Publicacion", func(t *testing.T) {
-		pub, err := queries.CreatePublicacion(contexto, db.CreatePublicacionParams{
-			IDEmprendimiento: emprendimiento.IDEmprendimiento, // Pasamos el ID del usuario recién creado
+		pub, err := repo.Create(contexto, db.CreatePublicacionParams{
+			IDEmprendimiento: emprendimiento.IDEmprendimiento,
 			Titulo:           "Oferta Especial de Prueba",
 			Tipo:             "promocion",
 		})
 		if err != nil {
-			t.Fatalf("CreatePublicacion falló: %v", err)
+			t.Fatalf("repo.Create fallo: %v", err)
 		}
 
 		if pub.IDPublicacion == 0 {
 			t.Errorf("Se esperaba ID autogenerado mayor a 0")
 		}
 
-		createPublicacionID = int64(pub.IDPublicacion)
+		createPublicacionID = pub.IDPublicacion
 
-		fetched, err := queries.GetPublicacion(contexto, int32(createPublicacionID))
+		fetched, err := repo.GetByID(contexto, createPublicacionID)
 		if err != nil {
-			t.Fatalf("GetPublicacion falló: %v", err)
+			t.Fatalf("repo.GetByID fallo: %v", err)
 		}
 
 		if fetched.Titulo != "Oferta Especial de Prueba" {
-			t.Errorf("Título incorrecto, esperado 'Oferta Especial de Prueba', obtenido '%s'", fetched.Titulo)
+			t.Errorf("Titulo incorrecto, esperado 'Oferta Especial de Prueba', obtenido '%s'", fetched.Titulo)
 		}
 	})
 
+	// LIST
 	t.Run("List Publicaciones", func(t *testing.T) {
-		lista, err := queries.ListPublicacionesByEmprendimiento(contexto, emprendimiento.IDEmprendimiento)
+		lista, err := repo.ListByEmprendimiento(contexto, emprendimiento.IDEmprendimiento)
 		if err != nil {
-			t.Fatalf("ListPublicaciones falló: %v", err)
+			t.Fatalf("repo.ListByEmprendimiento fallo: %v", err)
 		}
 
 		if len(lista) == 0 {
@@ -63,12 +66,12 @@ func TestQueries_Publicaciones_CRUD(t *testing.T) {
 		}
 	})
 
-	// UPDATE// UPDATE
+	// UPDATE
 	t.Run("Update Publicacion", func(t *testing.T) {
 		nuevoTitulo := "Oferta Actualizada de Primavera"
 
-		err := queries.UpdatePublicacion(contexto, db.UpdatePublicacionParams{
-			IDPublicacion: int32(createPublicacionID),
+		err := repo.Update(contexto, db.UpdatePublicacionParams{
+			IDPublicacion: createPublicacionID,
 			Titulo:        nuevoTitulo,
 			Contenido:     sql.NullString{String: "Nuevo contenido descriptivo", Valid: true},
 			ImagenUrl:     sql.NullString{String: "http://ejemplo.com/imagen.jpg", Valid: true},
@@ -76,56 +79,64 @@ func TestQueries_Publicaciones_CRUD(t *testing.T) {
 			Precio:        sql.NullString{String: "1500.00", Valid: true},
 		})
 		if err != nil {
-			t.Fatalf("UpdatePublicacion falló: %v", err)
+			t.Fatalf("repo.Update fallo: %v", err)
 		}
 
-		// Releer desde la base de datos para confirmar que persistió
-		updated, err := queries.GetPublicacion(contexto, int32(createPublicacionID))
+		// Releer desde la base de datos para confirmar que persistio
+		updated, err := repo.GetByID(contexto, createPublicacionID)
 		if err != nil {
-			t.Fatalf("GetPublicacion tras update falló: %v", err)
+			t.Fatalf("repo.GetByID tras update fallo: %v", err)
 		}
 
 		if updated.Titulo != nuevoTitulo {
-			t.Errorf("El título no se actualizó correctamente. Esperado: '%s', obtenido: '%s'", nuevoTitulo, updated.Titulo)
+			t.Errorf("El titulo no se actualizo correctamente. Esperado: '%s', obtenido: '%s'", nuevoTitulo, updated.Titulo)
 		}
 	})
+
 	// DELETE
 	t.Run("Delete Publicacion", func(t *testing.T) {
-		err := queries.DeletePublicacion(contexto, int32(createPublicacionID))
+		err := repo.Delete(contexto, createPublicacionID)
 		if err != nil {
-			t.Fatalf("DeletePublicacion falló: %v", err)
+			t.Fatalf("repo.Delete fallo: %v", err)
 		}
 
-		_, err = queries.GetPublicacion(contexto, int32(createPublicacionID))
+		_, err = repo.GetByID(contexto, createPublicacionID)
 		if !errors.Is(err, sql.ErrNoRows) {
-			t.Errorf("Se esperaba sql.ErrNoRows al consultar una publicación eliminada, se obtuvo: %v", err)
+			t.Errorf("Se esperaba sql.ErrNoRows al consultar una publicacion eliminada, se obtuvo: %v", err)
 		}
 	})
 
+	// CASCADE DELETE
 	t.Run("Cascade Delete Publicaciones al eliminar Emprendimiento", func(t *testing.T) {
-		// emprendimiento para el test
-		emp, _ := queries.CreateEmprendimiento(contexto, db.CreateEmprendimientoParams{
+		// emprendimiento temporal para el test
+		emp, err := queries.CreateEmprendimiento(contexto, db.CreateEmprendimientoParams{
 			Nombre: "Negocio Temporal",
 			Rubro:  "servicios",
 		})
+		if err != nil {
+			t.Fatalf("setup negocio temporal fallo: %v", err)
+		}
 
-		//  publicación relacionada con el emprendimiento
-		pub, _ := queries.CreatePublicacion(contexto, db.CreatePublicacionParams{
+		// publicacion relacionada usando el repositorio
+		pub, err := repo.Create(contexto, db.CreatePublicacionParams{
 			IDEmprendimiento: emp.IDEmprendimiento,
 			Titulo:           "Post que debe desaparecer",
 			Tipo:             "otro",
 		})
-
-		// eliminar emprendimiento (origen de realcion)
-		err := queries.DeleteEmprendimiento(contexto, emp.IDEmprendimiento)
 		if err != nil {
-			t.Fatalf("DeleteEmprendimiento falló: %v", err)
+			t.Fatalf("repo.Create fallo: %v", err)
 		}
 
-		// verificar que se borro en cascada sus publicaciones
-		_, err = queries.GetPublicacion(contexto, pub.IDPublicacion)
+		// eliminar emprendimiento (origen de la relacion)
+		err = queries.DeleteEmprendimiento(contexto, emp.IDEmprendimiento)
+		if err != nil {
+			t.Fatalf("DeleteEmprendimiento fallo: %v", err)
+		}
+
+		// verificar que se borro en cascada la publicacion
+		_, err = repo.GetByID(contexto, pub.IDPublicacion)
 		if !errors.Is(err, sql.ErrNoRows) {
-			t.Errorf("Se esperaba sql.ErrNoRows en la publicación tras borrar el negocio (ON DELETE CASCADE), se obtuvo: %v", err)
+			t.Errorf("Se esperaba sql.ErrNoRows en la publicacion tras borrar el negocio (ON DELETE CASCADE), se obtuvo: %v", err)
 		}
 	})
 }
