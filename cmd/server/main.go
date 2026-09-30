@@ -65,6 +65,11 @@ func main() {
 	empService := services.NewEmprendimientoService(empRepo)
 	empHandler := handlers.NewEmprendimientoHandler(empService)
 
+	// PUBLICACIONES - inyeccion de dependencias
+	pubRepo := repositories.NewPublicacionRepository(queries)
+	pubService := services.NewPublicacionService(pubRepo)
+	pubHandler := handlers.NewPublicacionHandler(pubService)
+
 	//-- manejo del enrutamiento (mux es para el mapeo de rutas especificas para la capa de presentacion)
 
 	router := http.NewServeMux()
@@ -104,6 +109,13 @@ func main() {
 	router.HandleFunc("POST /api/suscripciones", suscripcionHandler.Create) // 201 Created
 	router.HandleFunc("GET /api/usuarios/{id}/suscripciones", suscripcionHandler.ListByUser)// 200 OK
 	router.HandleFunc("DELETE /api/suscripciones", suscripcionHandler.Delete)// 204 No Content
+
+	// --- RUTAS DE PUBLICACIONES ---
+	router.HandleFunc("POST /api/publicaciones", pubHandler.Create)
+	router.HandleFunc("GET /api/publicaciones/{id}", pubHandler.GetByID)
+	router.HandleFunc("GET /api/emprendimientos/{id}/publicaciones", pubHandler.ListByEmprendimiento)
+	router.HandleFunc("PUT /api/publicaciones/{id}", pubHandler.Update)
+	router.HandleFunc("DELETE /api/publicaciones/{id}", pubHandler.Delete)
 
 	//ARRANCAR EL SV HTTP
 	port := getEnv("PORT", "8080")
