@@ -17,7 +17,7 @@ DB_HOST ?= localhost
 
 DB_URL := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable
 
-.PHONY: test build clean generate
+.PHONY: test build clean generate e2e
 
 test:
 	@printf "$(CYAN)___________________ Generando codigo con SQLC ___________________$(RESET)\n"
@@ -67,3 +67,7 @@ run:
 	atlas migrate apply --dir "file://db/migrations" --url "$(DB_URL)"
 	@echo "Iniciando servidor..."
 	go run cmd/server/main.go
+
+e2e:
+	@chmod +x requests.sh
+	@./requests.sh
