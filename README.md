@@ -31,7 +31,7 @@ Antes de ejecutar este proyecto, asegúrate de tener instalado el siguiente soft
 * **cURL** (para ejecutar las pruebas end-to-end)
 * *(Opcional)* **[sqlc](https://docs.sqlc.dev/en/latest/overview/install.html)** (el código ya se encuentra generado en `db/sqlc/`)
 
-## Instalación y Ejecución Local
+## Instalación local
 
 Para probar este proyecto en tu entorno local, sigue estos pasos en tu terminal:
 
@@ -66,6 +66,7 @@ make docker-up
 # Para detener todos los contenedores:
 make docker-down
 ```
+El servidor estará disponible en `http://localhost:8080`.
 
 **O de forma manual paso a paso:**
 1. **Construir y levantar todos los servicios:**
@@ -91,8 +92,21 @@ make docker-down
 
 ### Opción B: Ejecución sin Docker (Local Nativo)
 
-En este modo, el servidor Go se ejecuta directamente sobre el sistema operativo:
+En este modo, el servidor Go se ejecuta directamente sobre el sistema operativo, pero la base de datos se ejecuta en un contenedor Docker:
 
+**Forma rápida con Makefile:**
+```bash
+# Levanta la BD en Docker, aplica migraciones y ejecuta el servidor Go localmente.
+make run
+
+# Para detener todos los contenedores:
+make docker-down
+# Alternativa
+docker compose down
+```
+El servidor estará disponible en `http://localhost:8080`.
+
+**O de forma manual paso a paso:**
 1. **Asegurar que PostgreSQL esté corriendo:**
    Puedes usar una instancia local de PostgreSQL o levantar únicamente el contenedor de la BD:
    ```bash
@@ -106,14 +120,16 @@ En este modo, el servidor Go se ejecuta directamente sobre el sistema operativo:
 
 3. **Iniciar el servidor web:**
    ```bash
-   make run
-   # o alternativamente:
    go run cmd/server/main.go
    ```
 
-4. **Acceso web:**
-   - API y Health Check: `http://localhost:8080/health`
-   - Interfaz web estática: `http://localhost:8080/static/`
+4. **Verificar estado:**
+   El servidor estará disponible en `http://localhost:8080`.
+
+5. **Detener contenedores:**
+   ```bash
+   docker compose down
+   ```
 
 ## Tabla de Endpoints Disponibles
 
@@ -158,8 +174,6 @@ En este modo, el servidor Go se ejecuta directamente sobre el sistema operativo:
 | `POST` | `/api/suscripciones` | `201 Created` | `400`, `409`, `500` | Suscribir usuario a un emprendimiento |
 | `GET` | `/api/usuarios/{id}/suscripciones` | `200 OK` | `400`, `500` | Listar suscripciones activas de un usuario |
 | `DELETE` | `/api/suscripciones` | `204 No Content` | `400`, `404`, `500` | Cancelar/eliminar una suscripción existente |
-
----
 
 ## Pruebas de la Aplicación
 
