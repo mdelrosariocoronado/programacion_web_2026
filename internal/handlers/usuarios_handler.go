@@ -72,9 +72,9 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	usuario, err := h.service.CrearUsuario(
 		r.Context(),
 		req.NombreCompleto,
-		req.Rol,
 		req.Email,
 		req.Clave,
+		req.Rol,
 		req.IdEmprendimiento,
 	)
 	if err != nil{
