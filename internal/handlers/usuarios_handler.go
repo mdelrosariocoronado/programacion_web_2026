@@ -157,6 +157,10 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		req.IdEmprendimiento,
 	)
 	if err != nil {
+		if errors.Is(err, services.ErrUsuarioNoEncontrado) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
 		if errors.Is(err, services.ErrClave) ||
 			errors.Is(err, services.ErrEmailDuplicado) ||
 			errors.Is(err, services.ErrFormatoInvalidoEmail) ||
@@ -184,6 +188,10 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.EliminarUsuario(r.Context(), int32(id)); err != nil {
+		if errors.Is(err, services.ErrUsuarioNoEncontrado) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
 		http.Error(w, "Error al eliminar el usuario", http.StatusInternalServerError)
 		return
 	}
