@@ -46,8 +46,8 @@ func validarUsuario(nombre, email, rol string) error{
 	}
 
 	//REGLA 2 
-	if err:= ValidateEmail(strings.TrimSpace(email)); err != nil {
-		return fmt.Errorf("Error al validar el email: %w", err)
+	if err := ValidateEmail(strings.TrimSpace(email)); err != nil {
+		return ErrFormatoInvalidoEmail
 	}
 
 
@@ -155,6 +155,15 @@ func (s *userService) ListarUsuarios(ctx context.Context) ([]db.Usuario, error){
 }
 
 func (s *userService) ActualizarUsuario(ctx context.Context, id int32, nombre, email, clave, rol string, idEmprendimiento *int32) error{
+	// Verificar existencia previa
+	_, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrUsuarioNoEncontrado
+		}
+		return err
+	}
+
 	if err := validarUsuario(nombre, email, rol); err != nil {
 		return err
 	}
@@ -183,5 +192,14 @@ func (s *userService) ActualizarUsuario(ctx context.Context, id int32, nombre, e
 }
 
 func (s *userService) EliminarUsuario(ctx context.Context, id int32) error {
-		return s.repo.Delete(ctx, id)
+	// Verificar existencia previa
+	_, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrUsuarioNoEncontrado
+		}
+		return err
+	}
+
+	return s.repo.Delete(ctx, id)
 }
