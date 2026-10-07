@@ -17,7 +17,7 @@ DB_HOST ?= localhost
 
 DB_URL := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable
 
-.PHONY: test build clean generate e2e
+.PHONY: test build clean generate e2e docker-up docker-down
 
 test:
 	@printf "$(CYAN)___________________ Generando codigo con SQLC ___________________$(RESET)\n"
@@ -71,3 +71,16 @@ run:
 e2e:
 	@chmod +x requests.sh
 	@./requests.sh
+
+docker-up:
+	@printf "$(GREEN)Levantando BD y Servidor Go en Docker...$(RESET)\n"
+	docker compose up -d --build
+	@until docker compose exec -T db pg_isready -U $(DB_USER) -d $(DB_NAME) > /dev/null 2>&1; do \
+		sleep 1; \
+	done
+	atlas migrate apply --dir "file://db/migrations" --url "$(DB_URL)"
+	@printf "$(GREEN)Todo listo. Servidor corriendo en http://localhost:8080$(RESET)\n"
+
+docker-down:
+	@printf "$(YELLOW)Deteniendo contenedores Docker...$(RESET)\n"
+	docker compose down
