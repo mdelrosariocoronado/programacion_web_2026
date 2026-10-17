@@ -1,5 +1,5 @@
 #!/bin/bash
-# =============================================================================
+# 
 #  requests.sh - Pruebas End-to-End de la API de Emprendimientos
 #
 #  Ejecutar:  chmod +x requests.sh && ./requests.sh
@@ -11,13 +11,13 @@
 #
 #  NOTA: Este script CREA y ELIMINA registros reales en la base de datos.
 #        Ejecutar solo en un entorno de desarrollo.
-# =============================================================================
+# 
 
 set -euo pipefail
 
-# ---------------------------------------------------------------------------
+
 # Configuracion
-# ---------------------------------------------------------------------------
+
 BASE_URL="http://localhost:8080"
 CONTENT_TYPE="Content-Type: application/json"
 
@@ -38,13 +38,13 @@ TOTAL=0
 RESPONSE_FILE=$(mktemp /tmp/api_response_XXXXXX.json)
 trap "rm -f $RESPONSE_FILE" EXIT
 
-# ---------------------------------------------------------------------------
+
 # Funcion auxiliar: assert_status
-#   $1 = numero de test (ej: "1.1")
-#   $2 = descripcion del test
-#   $3 = codigo HTTP esperado
-#   $4... = comando curl completo
-# ---------------------------------------------------------------------------
+# $1 = numero de test (ej: "1.1")
+# $2 = descripcion del test
+# $3 = codigo HTTP esperado
+# $4... = comando curl completo
+
 assert_status() {
     local test_num="$1"
     local description="$2"
@@ -68,24 +68,24 @@ assert_status() {
     fi
 }
 
-# ---------------------------------------------------------------------------
+
 # Funcion auxiliar: extraer ID numerico de una respuesta JSON
 #   $1 = nombre del campo (ej: "id_emprendimiento")
 #   Usa el contenido de $RESPONSE_FILE
-# ---------------------------------------------------------------------------
+
 extract_id() {
     local field="$1"
     grep -o "\"${field}\":[0-9]*" "$RESPONSE_FILE" | head -1 | grep -o '[0-9]*$'
 }
 
-# ---------------------------------------------------------------------------
+#
 # Verificacion previa: el servidor esta corriendo?
-# ---------------------------------------------------------------------------
+#
 echo ""
-printf "${BOLD}============================================${RESET}\n"
+printf "${BOLD} __________________________________________________ ${RESET}\n"
 printf "${BOLD}  PRUEBAS E2E - API Emprendimientos${RESET}\n"
 printf "${BOLD}  Servidor: ${CYAN}%s${RESET}\n" "$BASE_URL"
-printf "${BOLD}============================================${RESET}\n"
+printf "${BOLD} __________________________________________________ ${RESET}\n"
 echo ""
 
 # Chequear que el servidor responde
@@ -97,9 +97,9 @@ if [ "$HEALTH_CODE" != "200" ]; then
 fi
 printf "${GREEN}Servidor activo (health check OK)${RESET}\n\n"
 
-# =============================================================================
-# SECCION 1: CREACION DE REGISTROS (201 Created)
-# =============================================================================
+
+# SECCION 1: CREACION DE REGISTROS (201 Created) __________________________________________________
+
 printf "${BOLD}${CYAN}--- SECCION 1: CREACION DE REGISTROS (201 Created) ---${RESET}\n\n"
 
 # 1.1 Crear Emprendimiento "TechCorp"
@@ -116,7 +116,7 @@ assert_status "1.1" "Crear emprendimiento TechCorp" "201" \
     }'
 EMP_ID_1=$(extract_id "id_emprendimiento")
 
-# 1.2 Crear Emprendimiento "FoodPlace"
+# - Crear Emprendimiento "FoodPlace"
 assert_status "1.2" "Crear emprendimiento FoodPlace" "201" \
     curl -X POST "${BASE_URL}/api/emprendimientos" \
     -H "$CONTENT_TYPE" \
@@ -130,7 +130,7 @@ assert_status "1.2" "Crear emprendimiento FoodPlace" "201" \
     }'
 EMP_ID_2=$(extract_id "id_emprendimiento")
 
-# 1.3 Crear Usuario emprendedor (vinculado al emprendimiento 1)
+# - Crear Usuario emprendedor (vinculado al emprendimiento 1)
 assert_status "1.3" "Crear usuario emprendedor" "201" \
     curl -X POST "${BASE_URL}/api/usuarios" \
     -H "$CONTENT_TYPE" \
@@ -143,7 +143,7 @@ assert_status "1.3" "Crear usuario emprendedor" "201" \
     }"
 USR_ID_1=$(extract_id "id_usuario")
 
-# 1.4 Crear Usuario cliente
+# - Crear Usuario cliente
 assert_status "1.4" "Crear usuario cliente" "201" \
     curl -X POST "${BASE_URL}/api/usuarios" \
     -H "$CONTENT_TYPE" \
@@ -155,7 +155,7 @@ assert_status "1.4" "Crear usuario cliente" "201" \
     }'
 USR_ID_2=$(extract_id "id_usuario")
 
-# 1.5 Crear Publicacion tipo producto
+# - Crear Publicacion tipo producto
 assert_status "1.5" "Crear publicacion tipo producto" "201" \
     curl -X POST "${BASE_URL}/api/publicaciones" \
     -H "$CONTENT_TYPE" \
@@ -169,7 +169,7 @@ assert_status "1.5" "Crear publicacion tipo producto" "201" \
     }"
 PUB_ID_1=$(extract_id "id_publicacion")
 
-# 1.6 Crear Publicacion tipo servicio
+# - Crear Publicacion tipo servicio
 assert_status "1.6" "Crear publicacion tipo servicio" "201" \
     curl -X POST "${BASE_URL}/api/publicaciones" \
     -H "$CONTENT_TYPE" \
@@ -183,7 +183,7 @@ assert_status "1.6" "Crear publicacion tipo servicio" "201" \
     }"
 PUB_ID_2=$(extract_id "id_publicacion")
 
-# 1.7 Crear Suscripcion (usuario cliente -> emprendimiento 1)
+# - Crear Suscripcion (usuario cliente -> emprendimiento 1)
 assert_status "1.7" "Crear suscripcion" "201" \
     curl -X POST "${BASE_URL}/api/suscripciones" \
     -H "$CONTENT_TYPE" \
@@ -197,47 +197,47 @@ printf "  ${YELLOW}IDs capturados: EMP1=%s, EMP2=%s, USR1=%s, USR2=%s, PUB1=%s, 
     "$EMP_ID_1" "$EMP_ID_2" "$USR_ID_1" "$USR_ID_2" "$PUB_ID_1" "$PUB_ID_2"
 echo ""
 
-# =============================================================================
-# SECCION 2: CONSULTAS Y LISTADOS (200 OK)
-# =============================================================================
+
+# SECCION 2: CONSULTAS Y LISTADOS (200 OK) __________________________________________________
+
 printf "${BOLD}${CYAN}--- SECCION 2: CONSULTAS Y LISTADOS (200 OK) ---${RESET}\n\n"
 
-# 2.1 Listar todos los emprendimientos
+# - Listar todos los emprendimientos
 assert_status "2.1" "Listar todos los emprendimientos" "200" \
     curl -X GET "${BASE_URL}/api/emprendimientos"
 
-# 2.2 Obtener emprendimiento por ID
+# - Obtener emprendimiento por ID
 assert_status "2.2" "Obtener emprendimiento por ID (${EMP_ID_1})" "200" \
     curl -X GET "${BASE_URL}/api/emprendimientos/${EMP_ID_1}"
 
-# 2.3 Listar todos los usuarios
+# - Listar todos los usuarios
 assert_status "2.3" "Listar todos los usuarios" "200" \
     curl -X GET "${BASE_URL}/api/usuarios"
 
-# 2.4 Obtener usuario por ID
+# - Obtener usuario por ID
 assert_status "2.4" "Obtener usuario por ID (${USR_ID_1})" "200" \
     curl -X GET "${BASE_URL}/api/usuarios/${USR_ID_1}"
 
-# 2.5 Obtener publicacion por ID
+# - Obtener publicacion por ID
 assert_status "2.5" "Obtener publicacion por ID (${PUB_ID_1})" "200" \
     curl -X GET "${BASE_URL}/api/publicaciones/${PUB_ID_1}"
 
-# 2.6 Listar publicaciones de un emprendimiento
+# - Listar publicaciones de un emprendimiento
 assert_status "2.6" "Listar publicaciones del emprendimiento ${EMP_ID_1}" "200" \
     curl -X GET "${BASE_URL}/api/emprendimientos/${EMP_ID_1}/publicaciones"
 
-# 2.7 Listar suscripciones de un usuario
+# - Listar suscripciones de un usuario
 assert_status "2.7" "Listar suscripciones del usuario ${USR_ID_2}" "200" \
     curl -X GET "${BASE_URL}/api/usuarios/${USR_ID_2}/suscripciones"
 
 echo ""
 
-# =============================================================================
-# SECCION 3: MODIFICACIONES (200 OK)
-# =============================================================================
+ 
+# SECCION 3: MODIFICACIONES (200 OK) __________________________________________________
+
 printf "${BOLD}${CYAN}--- SECCION 3: MODIFICACIONES (200 OK) ---${RESET}\n\n"
 
-# 3.1 Actualizar emprendimiento
+# - Actualizar emprendimiento
 assert_status "3.1" "Actualizar emprendimiento (${EMP_ID_1})" "200" \
     curl -X PUT "${BASE_URL}/api/emprendimientos/${EMP_ID_1}" \
     -H "$CONTENT_TYPE" \
@@ -250,7 +250,7 @@ assert_status "3.1" "Actualizar emprendimiento (${EMP_ID_1})" "200" \
         "activo": true
     }'
 
-# 3.2 Actualizar usuario
+# - Actualizar usuario
 assert_status "3.2" "Actualizar usuario (${USR_ID_1})" "200" \
     curl -X PUT "${BASE_URL}/api/usuarios/${USR_ID_1}" \
     -H "$CONTENT_TYPE" \
@@ -262,7 +262,7 @@ assert_status "3.2" "Actualizar usuario (${USR_ID_1})" "200" \
         \"id_emprendimiento\": ${EMP_ID_1}
     }"
 
-# 3.3 Actualizar publicacion
+# - Actualizar publicacion
 assert_status "3.3" "Actualizar publicacion (${PUB_ID_1})" "200" \
     curl -X PUT "${BASE_URL}/api/publicaciones/${PUB_ID_1}" \
     -H "$CONTENT_TYPE" \
@@ -276,14 +276,14 @@ assert_status "3.3" "Actualizar publicacion (${PUB_ID_1})" "200" \
 
 echo ""
 
-# =============================================================================
-# SECCION 4: CASOS DE ERROR (400 Bad Request / 404 Not Found)
-# =============================================================================
+
+# SECCION 4: CASOS DE ERROR (400 Bad Request / 404 Not Found)__________________________________________________
+
 printf "${BOLD}${CYAN}--- SECCION 4: CASOS DE ERROR (400 / 404) ---${RESET}\n\n"
 
 # --- Errores de validacion (400) ---
 
-# 4.1 Emprendimiento sin nombre
+# - Emprendimiento sin nombre
 assert_status "4.1" "POST emprendimiento sin nombre -> 400" "400" \
     curl -X POST "${BASE_URL}/api/emprendimientos" \
     -H "$CONTENT_TYPE" \
@@ -292,7 +292,7 @@ assert_status "4.1" "POST emprendimiento sin nombre -> 400" "400" \
         "rubro": "Tecnologia"
     }'
 
-# 4.2 Emprendimiento sin rubro
+# - Emprendimiento sin rubro
 assert_status "4.2" "POST emprendimiento sin rubro -> 400" "400" \
     curl -X POST "${BASE_URL}/api/emprendimientos" \
     -H "$CONTENT_TYPE" \
@@ -301,7 +301,7 @@ assert_status "4.2" "POST emprendimiento sin rubro -> 400" "400" \
         "rubro": ""
     }'
 
-# 4.3 Usuario con email invalido
+# - Usuario con email invalido
 assert_status "4.3" "POST usuario con email invalido -> 400" "400" \
     curl -X POST "${BASE_URL}/api/usuarios" \
     -H "$CONTENT_TYPE" \
@@ -312,7 +312,7 @@ assert_status "4.3" "POST usuario con email invalido -> 400" "400" \
         "rol": "cliente"
     }'
 
-# 4.4 Usuario con clave corta (menos de 6 caracteres)
+# - Usuario con clave corta (menos de 6 caracteres)
 assert_status "4.4" "POST usuario con clave corta -> 400" "400" \
     curl -X POST "${BASE_URL}/api/usuarios" \
     -H "$CONTENT_TYPE" \
@@ -323,7 +323,7 @@ assert_status "4.4" "POST usuario con clave corta -> 400" "400" \
         "rol": "cliente"
     }'
 
-# 4.5 Usuario con rol invalido
+# - Usuario con rol invalido
 assert_status "4.5" "POST usuario con rol invalido -> 400" "400" \
     curl -X POST "${BASE_URL}/api/usuarios" \
     -H "$CONTENT_TYPE" \
@@ -334,7 +334,7 @@ assert_status "4.5" "POST usuario con rol invalido -> 400" "400" \
         "rol": "superadmin"
     }'
 
-# 4.6 Publicacion sin titulo
+# - Publicacion sin titulo
 assert_status "4.6" "POST publicacion sin titulo -> 400" "400" \
     curl -X POST "${BASE_URL}/api/publicaciones" \
     -H "$CONTENT_TYPE" \
@@ -345,7 +345,7 @@ assert_status "4.6" "POST publicacion sin titulo -> 400" "400" \
         \"precio\": 100.00
     }"
 
-# 4.7 Publicacion con tipo invalido
+# - Publicacion con tipo invalido
 assert_status "4.7" "POST publicacion con tipo invalido -> 400" "400" \
     curl -X POST "${BASE_URL}/api/publicaciones" \
     -H "$CONTENT_TYPE" \
@@ -356,7 +356,7 @@ assert_status "4.7" "POST publicacion con tipo invalido -> 400" "400" \
         \"precio\": 100.00
     }"
 
-# 4.8 Publicacion con precio negativo
+# - Publicacion con precio negativo
 assert_status "4.8" "POST publicacion con precio negativo -> 400" "400" \
     curl -X POST "${BASE_URL}/api/publicaciones" \
     -H "$CONTENT_TYPE" \
@@ -367,7 +367,7 @@ assert_status "4.8" "POST publicacion con precio negativo -> 400" "400" \
         \"precio\": -50.00
     }"
 
-# 4.9 Publicacion con id_emprendimiento invalido
+# - Publicacion con id_emprendimiento invalido
 assert_status "4.9" "POST publicacion con id_emprendimiento <= 0 -> 400" "400" \
     curl -X POST "${BASE_URL}/api/publicaciones" \
     -H "$CONTENT_TYPE" \
@@ -378,7 +378,7 @@ assert_status "4.9" "POST publicacion con id_emprendimiento <= 0 -> 400" "400" \
         "precio": 100.00
     }'
 
-# 4.10 Suscripcion con IDs invalidos
+# - Suscripcion con IDs invalidos
 assert_status "4.10" "POST suscripcion con ids invalidos -> 400" "400" \
     curl -X POST "${BASE_URL}/api/suscripciones" \
     -H "$CONTENT_TYPE" \
@@ -387,21 +387,21 @@ assert_status "4.10" "POST suscripcion con ids invalidos -> 400" "400" \
         "id_emprendimiento": -1
     }'
 
-# --- Errores de recurso no encontrado (404) ---
+#  Errores de recurso no encontrado (404) __________________________________________________
 
-# 4.11 GET emprendimiento inexistente
+# - GET emprendimiento inexistente
 assert_status "4.11" "GET emprendimiento inexistente (99999) -> 404" "404" \
     curl -X GET "${BASE_URL}/api/emprendimientos/99999"
 
-# 4.12 GET publicacion inexistente
+# - GET publicacion inexistente
 assert_status "4.12" "GET publicacion inexistente (99999) -> 404" "404" \
     curl -X GET "${BASE_URL}/api/publicaciones/99999"
 
-# 4.13 GET usuario inexistente
+# - GET usuario inexistente
 assert_status "4.13" "GET usuario inexistente (99999) -> 404" "404" \
     curl -X GET "${BASE_URL}/api/usuarios/99999"
 
-# 4.14 PUT emprendimiento inexistente
+# - PUT emprendimiento inexistente
 assert_status "4.14" "PUT emprendimiento inexistente (99999) -> 404" "404" \
     curl -X PUT "${BASE_URL}/api/emprendimientos/99999" \
     -H "$CONTENT_TYPE" \
@@ -410,7 +410,7 @@ assert_status "4.14" "PUT emprendimiento inexistente (99999) -> 404" "404" \
         "rubro": "Test"
     }'
 
-# 4.15 PUT publicacion inexistente
+# - PUT publicacion inexistente
 assert_status "4.15" "PUT publicacion inexistente (99999) -> 404" "404" \
     curl -X PUT "${BASE_URL}/api/publicaciones/99999" \
     -H "$CONTENT_TYPE" \
@@ -420,7 +420,7 @@ assert_status "4.15" "PUT publicacion inexistente (99999) -> 404" "404" \
         "precio": 100.00
     }'
 
-# 4.16 PUT usuario inexistente
+# - PUT usuario inexistente
 assert_status "4.16" "PUT usuario inexistente (99999) -> 404" "404" \
     curl -X PUT "${BASE_URL}/api/usuarios/99999" \
     -H "$CONTENT_TYPE" \
@@ -431,19 +431,19 @@ assert_status "4.16" "PUT usuario inexistente (99999) -> 404" "404" \
         "rol": "cliente"
     }'
 
-# 4.17 DELETE emprendimiento inexistente
+# - DELETE emprendimiento inexistente
 assert_status "4.17" "DELETE emprendimiento inexistente (99999) -> 404" "404" \
     curl -X DELETE "${BASE_URL}/api/emprendimientos/99999"
 
-# 4.18 DELETE publicacion inexistente
+# - DELETE publicacion inexistente
 assert_status "4.18" "DELETE publicacion inexistente (99999) -> 404" "404" \
     curl -X DELETE "${BASE_URL}/api/publicaciones/99999"
 
-# 4.19 DELETE usuario inexistente
+# - DELETE usuario inexistente
 assert_status "4.19" "DELETE usuario inexistente (99999) -> 404" "404" \
     curl -X DELETE "${BASE_URL}/api/usuarios/99999"
 
-# 4.20 DELETE suscripcion inexistente
+# - DELETE suscripcion inexistente
 assert_status "4.20" "DELETE suscripcion inexistente -> 404" "404" \
     curl -X DELETE "${BASE_URL}/api/suscripciones" \
     -H "$CONTENT_TYPE" \
@@ -454,12 +454,12 @@ assert_status "4.20" "DELETE suscripcion inexistente -> 404" "404" \
 
 echo ""
 
-# =============================================================================
-# SECCION 5: ELIMINACIONES (204 No Content + verificacion 404)
-# =============================================================================
+
+# SECCION 5: ELIMINACIONES (204 No Content + verificacion 404)__________________________________________________
+
 printf "${BOLD}${CYAN}--- SECCION 5: ELIMINACIONES (204 + verificacion 404) ---${RESET}\n\n"
 
-# 5.1 Eliminar suscripcion -> 204
+# - Eliminar suscripcion -> 204
 assert_status "5.1a" "Eliminar suscripcion -> 204" "204" \
     curl -X DELETE "${BASE_URL}/api/suscripciones" \
     -H "$CONTENT_TYPE" \
@@ -468,7 +468,7 @@ assert_status "5.1a" "Eliminar suscripcion -> 204" "204" \
         \"id_emprendimiento\": ${EMP_ID_1}
     }"
 
-# 5.1 Verificar que la suscripcion ya no existe -> 404
+# - Verificar que la suscripcion ya no existe -> 404
 assert_status "5.1b" "Verificar suscripcion eliminada -> 404" "404" \
     curl -X DELETE "${BASE_URL}/api/suscripciones" \
     -H "$CONTENT_TYPE" \
@@ -477,7 +477,7 @@ assert_status "5.1b" "Verificar suscripcion eliminada -> 404" "404" \
         \"id_emprendimiento\": ${EMP_ID_1}
     }"
 
-# 5.2 Eliminar publicacion 1 -> 204
+# - Eliminar publicacion 1 -> 204
 assert_status "5.2a" "Eliminar publicacion ${PUB_ID_1} -> 204" "204" \
     curl -X DELETE "${BASE_URL}/api/publicaciones/${PUB_ID_1}"
 
@@ -485,7 +485,7 @@ assert_status "5.2a" "Eliminar publicacion ${PUB_ID_1} -> 204" "204" \
 assert_status "5.2b" "Verificar publicacion ${PUB_ID_1} eliminada -> 404" "404" \
     curl -X GET "${BASE_URL}/api/publicaciones/${PUB_ID_1}"
 
-# 5.3 Eliminar publicacion 2 -> 204
+# - Eliminar publicacion 2 -> 204
 assert_status "5.3a" "Eliminar publicacion ${PUB_ID_2} -> 204" "204" \
     curl -X DELETE "${BASE_URL}/api/publicaciones/${PUB_ID_2}"
 
@@ -493,7 +493,7 @@ assert_status "5.3a" "Eliminar publicacion ${PUB_ID_2} -> 204" "204" \
 assert_status "5.3b" "Verificar publicacion ${PUB_ID_2} eliminada -> 404" "404" \
     curl -X GET "${BASE_URL}/api/publicaciones/${PUB_ID_2}"
 
-# 5.4 Eliminar usuario 1 -> 204
+# - Eliminar usuario 1 -> 204
 assert_status "5.4a" "Eliminar usuario ${USR_ID_1} -> 204" "204" \
     curl -X DELETE "${BASE_URL}/api/usuarios/${USR_ID_1}"
 
@@ -501,7 +501,7 @@ assert_status "5.4a" "Eliminar usuario ${USR_ID_1} -> 204" "204" \
 assert_status "5.4b" "Verificar usuario ${USR_ID_1} eliminado -> 404" "404" \
     curl -X GET "${BASE_URL}/api/usuarios/${USR_ID_1}"
 
-# 5.5 Eliminar usuario 2 -> 204
+# - Eliminar usuario 2 -> 204
 assert_status "5.5a" "Eliminar usuario ${USR_ID_2} -> 204" "204" \
     curl -X DELETE "${BASE_URL}/api/usuarios/${USR_ID_2}"
 
@@ -509,7 +509,7 @@ assert_status "5.5a" "Eliminar usuario ${USR_ID_2} -> 204" "204" \
 assert_status "5.5b" "Verificar usuario ${USR_ID_2} eliminado -> 404" "404" \
     curl -X GET "${BASE_URL}/api/usuarios/${USR_ID_2}"
 
-# 5.6 Eliminar emprendimiento 1 -> 204
+# - Eliminar emprendimiento 1 -> 204
 assert_status "5.6a" "Eliminar emprendimiento ${EMP_ID_1} -> 204" "204" \
     curl -X DELETE "${BASE_URL}/api/emprendimientos/${EMP_ID_1}"
 
@@ -517,7 +517,7 @@ assert_status "5.6a" "Eliminar emprendimiento ${EMP_ID_1} -> 204" "204" \
 assert_status "5.6b" "Verificar emprendimiento ${EMP_ID_1} eliminado -> 404" "404" \
     curl -X GET "${BASE_URL}/api/emprendimientos/${EMP_ID_1}"
 
-# 5.7 Eliminar emprendimiento 2 -> 204
+# - Eliminar emprendimiento 2 -> 204
 assert_status "5.7a" "Eliminar emprendimiento ${EMP_ID_2} -> 204" "204" \
     curl -X DELETE "${BASE_URL}/api/emprendimientos/${EMP_ID_2}"
 
@@ -527,16 +527,16 @@ assert_status "5.7b" "Verificar emprendimiento ${EMP_ID_2} eliminado -> 404" "40
 
 echo ""
 
-# =============================================================================
-# RESUMEN FINAL
-# =============================================================================
-printf "${BOLD}============================================${RESET}\n"
+
+# RESUMEN FINAL__________________________________________________
+
+printf "${BOLD} __________________________________________________ ${RESET}\n"
 if [ "$FAIL" -eq 0 ]; then
     printf "${BOLD}  ${GREEN}RESULTADOS: %d/%d pasaron, %d fallaron${RESET}\n" "$PASS" "$TOTAL" "$FAIL"
 else
     printf "${BOLD}  ${RED}RESULTADOS: %d/%d pasaron, %d fallaron${RESET}\n" "$PASS" "$TOTAL" "$FAIL"
 fi
-printf "${BOLD}============================================${RESET}\n"
+printf "${BOLD} __________________________________________________ ${RESET}\n"
 echo ""
 
 # Codigo de salida: 0 si todos pasaron, 1 si hubo fallos
