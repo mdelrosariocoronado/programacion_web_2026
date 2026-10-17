@@ -1,16 +1,15 @@
 #!/bin/bash
 # 
-#  requests.sh - Pruebas End-to-End de la API de Emprendimientos
-#
-#  Ejecutar:  chmod +x requests.sh && ./requests.sh
+# Pruebas End-to-End de la API de Emprendimientos
+
 #
 #  Requisitos:
 #    - El servidor debe estar corriendo en http://localhost:8080
 #    - La base de datos debe aceptar registros nuevos
 #    - curl debe estar instalado
 #
-#  NOTA: Este script CREA y ELIMINA registros reales en la base de datos.
-#        Ejecutar solo en un entorno de desarrollo.
+# Este script CREA y ELIMINA registros reales en la base de datos.
+# Ejecutar solo en un entorno de desarrollo.
 # 
 
 set -euo pipefail
