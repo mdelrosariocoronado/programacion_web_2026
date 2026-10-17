@@ -199,7 +199,7 @@ Para validar el funcionamiento completo de la API de punta a punta con peticione
    ```
 
 
-**O de forma directamente:**
+**O de forma directa:**
 1. **Hacer pruebas end to end con:**
  ```bash
    make test-api
