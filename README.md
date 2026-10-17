@@ -1,4 +1,4 @@
-# Trabajo practico N°2
+# Trabajo practico N°3
 
 ## Integrantes del grupo
 *   María Del Rosario Coronado
@@ -35,18 +35,18 @@ Antes de ejecutar este proyecto, asegúrate de tener instalado el siguiente soft
 
 Para probar este proyecto en tu entorno local, sigue estos pasos en tu terminal:
 
-**1. Clonar el repositorio**
+**Clonar el repositorio**
 Descarga el código fuente a tu computadora ejecutando:
 `git clone https://github.com/mdelrosariocoronado/prog_web.git`
 
-**2. Navegar al directorio del proyecto**
+**Navegar al directorio del proyecto**
 Ingresa a la carpeta principal que se acaba de descargar:
 `cd prog_web`
 
-**3.Configura las variables de entorno**
+**Configura las variables de entorno**
 `cp .env.example .env`
 
-**4. Ejecución de Pruebas Automatizadas**
+**Ejecución de Pruebas Automatizadas**
 El proyecto incluye un pipeline automatizado en el `Makefile` que levanta la base de datos en Docker, aplica el esquema DDL con Atlas, compila las consultas con `sqlc` y corre toda la suite de tests unitarios y de integración:
 `make test`
 
@@ -54,7 +54,7 @@ El proyecto incluye un pipeline automatizado en el `Makefile` que levanta la bas
 
 ## Guía de Ejecución
 
-### Opción A: Ejecución con Docker (Recomendada)
+### Primera Opción: Ejecución con Docker (La que recomendamos)
 
 Permite levantar tanto la base de datos PostgreSQL como la API de Go dentro de contenedores de forma aislada.
 
@@ -90,7 +90,7 @@ El servidor estará disponible en `http://localhost:8080`.
 
 ---
 
-### Opción B: Ejecución sin Docker (Local Nativo)
+### Segunda Opción: Ejecución sin Docker (Local Nativo)
 
 En este modo, el servidor Go se ejecuta directamente sobre el sistema operativo, pero la base de datos se ejecuta en un contenedor Docker:
 
@@ -133,7 +133,7 @@ El servidor estará disponible en `http://localhost:8080`.
 
 ## Tabla de Endpoints Disponibles
 
-### 1. Sistema y Vistas Estáticas
+### Sistema y Vistas Estáticas
 | Metodo | Ruta | Codigo exito | Errores Posibles | Descripción |
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `/health` | `200 OK` | `500` | Chequeo de estado del servidor |
@@ -141,7 +141,7 @@ El servidor estará disponible en `http://localhost:8080`.
 | `GET` | `/` | `200 OK` | `500` | Página de inicio |
 | `GET` | `/users` | `200 OK` | `500` | Formulario de gestión de usuarios |
 
-### 2. Emprendimientos (`/api/emprendimientos`)
+###  Emprendimientos (`/api/emprendimientos`)
 | Método | Ruta | Código Éxito | Errores Posibles | Descripción |
 | :--- | :--- | :--- | :--- | :--- |
 | `POST` | `/api/emprendimientos` | `201 Created` | `400`, `500` | Crear nuevo emprendimiento |
@@ -150,7 +150,7 @@ El servidor estará disponible en `http://localhost:8080`.
 | `PUT` | `/api/emprendimientos/{id}` | `200 OK` | `400`, `404`, `500` | Actualizar datos de un emprendimiento |
 | `DELETE` | `/api/emprendimientos/{id}` | `204 No Content` | `400`, `404`, `500` | Eliminar emprendimiento (borra en cascada publicaciones) |
 
-### 3. Usuarios (`/api/usuarios`)
+###  Usuarios (`/api/usuarios`)
 | Método | Ruta | Código Éxito | Errores Posibles | Descripción |
 | :--- | :--- | :--- | :--- | :--- |
 | `POST` | `/api/usuarios` | `201 Created` | `400`, `500` | Crear nuevo usuario |
@@ -159,7 +159,7 @@ El servidor estará disponible en `http://localhost:8080`.
 | `PUT` | `/api/usuarios/{id}` | `200 OK` | `400`, `404`, `500` | Actualizar datos de un usuario |
 | `DELETE` | `/api/usuarios/{id}` | `204 No Content` | `400`, `404`, `500` | Eliminar usuario |
 
-### 4. Publicaciones (`/api/publicaciones`)
+###  Publicaciones (`/api/publicaciones`)
 | Método | Ruta | Código Éxito | Errores Posibles | Descripción |
 | :--- | :--- | :--- | :--- | :--- |
 | `POST` | `/api/publicaciones` | `201 Created` | `400`, `500` | Crear publicación (`producto`, `promocion`, `servicio`, `otro`) |
@@ -177,14 +177,14 @@ El servidor estará disponible en `http://localhost:8080`.
 
 ## Pruebas de la Aplicación 
 
-### 1. Pruebas Unitarias y de Integración (Go Testing)
+###  Pruebas Unitarias y de Integración (Go Testing)
 El proyecto incluye un pipeline automatizado en el `Makefile` que genera código con `sqlc`, levanta la base de datos de test temporal, aplica migraciones y corre la suite completa de Go:
 
 ```bash
 make test
 ```
 
-### 2. Pruebas End-to-End (`requests.sh`) (TP 3)
+###  Pruebas End-to-End (`requests.sh`) (TP 3)
 Para validar el funcionamiento completo de la API de punta a punta con peticiones HTTP reales:
 
 1. Asegúrate de tener el servidor corriendo en `http://localhost:8080` (vía `make run` o Docker).
