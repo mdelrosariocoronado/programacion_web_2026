@@ -29,7 +29,7 @@ Antes de ejecutar este proyecto, asegúrate de tener instalado el siguiente soft
 * **[Atlas CLI](https://atlasgo.io/getting-started/)** (para aplicar migraciones DDL)
 * **[Git](https://git-scm.com/downloads)**
 * **cURL** (para ejecutar las pruebas end-to-end)
-* *(Opcional)* **[sqlc](https://docs.sqlc.dev/en/latest/overview/install.html)** (el código ya se encuentra generado en `db/sqlc/`)
+* **[sqlc](https://docs.sqlc.dev/en/latest/overview/install.html)**
 
 ## Instalación local
 
@@ -134,7 +134,7 @@ El servidor estará disponible en `http://localhost:8080`.
 ## Tabla de Endpoints Disponibles
 
 ### 1. Sistema y Vistas Estáticas
-| Método | Ruta | Código Éxito | Errores Posibles | Descripción |
+| Metodo | Ruta | Codigo exito | Errores Posibles | Descripción |
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `/health` | `200 OK` | `500` | Chequeo de estado del servidor |
 | `GET` | `/static/` | `200 OK` | `404` | Archivos estáticos de la interfaz web |
@@ -175,7 +175,7 @@ El servidor estará disponible en `http://localhost:8080`.
 | `GET` | `/api/usuarios/{id}/suscripciones` | `200 OK` | `400`, `500` | Listar suscripciones activas de un usuario |
 | `DELETE` | `/api/suscripciones` | `204 No Content` | `400`, `404`, `500` | Cancelar/eliminar una suscripción existente |
 
-## Pruebas de la Aplicación
+## Pruebas de la Aplicación 
 
 ### 1. Pruebas Unitarias y de Integración (Go Testing)
 El proyecto incluye un pipeline automatizado en el `Makefile` que genera código con `sqlc`, levanta la base de datos de test temporal, aplica migraciones y corre la suite completa de Go:
@@ -184,7 +184,7 @@ El proyecto incluye un pipeline automatizado en el `Makefile` que genera código
 make test
 ```
 
-### 2. Pruebas End-to-End (`requests.sh`)
+### 2. Pruebas End-to-End (`requests.sh`) (TP 3)
 Para validar el funcionamiento completo de la API de punta a punta con peticiones HTTP reales:
 
 1. Asegúrate de tener el servidor corriendo en `http://localhost:8080` (vía `make run` o Docker).
@@ -198,12 +198,24 @@ Para validar el funcionamiento completo de la API de punta a punta con peticione
    ./requests.sh
    ```
 
+
+**O de forma directamente:**
+1. **Hacer pruebas end to end con:**
+ ```bash
+   make test-api
+ ```
+
+   Levanta el docker, ejecuta atlas, luego el e2e y luego da de baja el docker.
+
+
 El script valida de manera secuencial:
 1. **Creación de registros (201 Created):** Emprendimientos, usuarios, publicaciones y suscripciones con captura dinámica de IDs.
 2. **Consultas y listados (200 OK):** Verificación de lectura de todos los recursos y colecciones.
 3. **Modificaciones (200 OK):** Actualización de datos mediante peticiones `PUT`.
 4. **Casos de error (400 Bad Request / 404 Not Found):** Validaciones de datos y consultas sobre IDs inexistentes.
 5. **Eliminaciones (204 No Content y verificación 404 posterior):** Bajas de recursos y verificación estricta de que ya no se encuentran disponibles.
+
+
 
 ## Ejecución del Servidor Web, CORRESPONDIENTE AL TP1
 
