@@ -16,4 +16,7 @@ temp/
 *.so
 *.dylib
 server        
-# Nombre del binario generado por Makefile
+
+# Correccion de tp2
+
+db/sqlc/
