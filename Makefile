@@ -87,17 +87,5 @@ docker-down:
 
 
 test-api:
-	@printf "$(GREEN)Levantando BD y Servidor Go en Docker...$(RESET)\n"
-	docker compose up -d --build
-	@until docker compose exec -T db pg_isready -U $(DB_USER) -d $(DB_NAME) > /dev/null 2>&1; do \
-		sleep 1; \
-	done
-	@printf "$(YELLOW)Aplicando migraciones a la base de datos...$(RESET)\n"
-	atlas migrate apply --dir "file://db/migrations" --url "$(DB_URL)"
-	
-	@printf "$(GREEN)Ejecutando pruebas de la API (requests.sh)...$(RESET)\n"
-	@chmod +x requests.sh
-	@./requests.sh
-
-	@printf "$(YELLOW)Deteniendo entorno de pruebas...$(RESET)\n"
-	docker compose down
+	@chmod +x test-api.sh
+	@./test-api.sh
