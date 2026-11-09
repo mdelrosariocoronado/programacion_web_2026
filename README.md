@@ -1,4 +1,4 @@
-# Trabajo practico N°3
+# Trabajo Práctico N°5 - Vistas Dinámicas con Templ y SQLc (SSR)
 
 ## Integrantes del grupo
 *   María Del Rosario Coronado
@@ -9,7 +9,7 @@
 
 ## Documentación del Proyecto
 
-Aplicación web desarrollada en Go que modela una red de emprendimientos locales en Tandil. Implementa una arquitectura por capas limpia (**Handlers $\rightarrow$ Services $\rightarrow$ Repositories $\rightarrow$ Database**) con persistencia en PostgreSQL mediante consultas tipadas y compiladas con `sqlc`.
+Aplicación web desarrollada en Go que modela una red de emprendimientos locales en Tandil. Implementa una arquitectura en tres capas (**Presentación SSR con `templ` $\leftrightarrow$ Handlers $\rightarrow$ Services $\rightarrow$ Repositories (`sqlc`) $\rightarrow$ PostgreSQL**), renderizando las vistas HTML dinámicamente desde el servidor sin depender de JavaScript en el cliente.
 
 ### Modelo de Datos
 * **`emprendimientos`:** Perfil del negocio, rubro y datos de contacto.
@@ -18,9 +18,11 @@ Aplicación web desarrollada en Go que modela una red de emprendimientos locales
 * **`suscripciones`:** Tabla intermedia que materializa la relación N:M entre usuarios y los emprendimientos que siguen.
 
 ### Herramientas y Patrones
-* **SQL Directo con `sqlc`:** Se adoptó `sqlc` para compilar consultas SQL puras a código Go seguro, evitando la discordancia de impedancia y la sobrecarga de un ORM pesado.
-* **Migraciones con Atlas:** El esquema se versiona mediante scripts DDL fechados en `db/migrations/`, garantizando reproducibilidad y control de versiones en el motor.
-* **Entorno con Docker Compose:** Ejecución de base de datos y aplicación web en contenedores reproducibles.
+* **Server-Side Rendering (SSR) con `templ`:** La capa de presentación se define en componentes tipados dentro de `views/` (`layout.templ`, `emprendimientos.templ`, `usuarios.templ`, `publicaciones.templ`) que se compilan a código Go nativo (`*_templ.go`), brindando seguridad de tipos en compilación y escapado automático contra ataques XSS.
+* **Patrón Post/Redirect/Get (PRG):** El alta de entidades se realiza mediante formularios HTML clásicos (`method="POST"`). El servidor procesa los datos con `r.ParseForm()`, valida y persiste mediante la capa de servicios y responde con una redirección HTTP (`303 See Other`) hacia la ruta `GET`, evitando reenvíos accidentales al recargar la página.
+* **SQL Directo con `sqlc`:** Compilación de consultas SQL puras a código Go seguro y fuertemente tipado.
+* **Migraciones con Atlas:** Versionado reproducible del esquema relacional en `db/migrations/`.
+* **Entorno con Docker Compose:** Ejecución del motor PostgreSQL y la aplicación en contenedores reproducibles.
 
 ## Requisitos Previos
 
@@ -28,84 +30,77 @@ Antes de ejecutar este proyecto, asegúrate de contar con las siguientes herrami
 
 * **[Git](https://git-scm.com/downloads)**
 * **[Docker](https://docs.docker.com/get-docker/) & Docker Compose** (en ejecución)
-* **[Go](https://go.dev/dl/)** (v1.22 o superior)
-* **cURL** (para la ejecución de las pruebas HTTP)
+* **[Go](https://go.dev/dl/)** (v1.22 o superior / compatible con `templ` (usamos v1.26 para este tp))
 * **[Atlas CLI](https://atlasgo.io/getting-started/)** (para la aplicación de migraciones DDL)
 * **[sqlc](https://docs.sqlc.dev/en/latest/overview/install.html)** (para la generación tipada de repositorios)
+* **[templ](https://templ.guide/)** (se ejecuta automáticamente vía `go run github.com/a-h/templ/cmd/templ@latest generate`)
 
 ---
 
-## Inicio Rápido: Clonar y Ejecutar Pruebas (TP 3)
+## Inicio Rápido: Clonar y Ejecutar la Aplicación (TP 5)
 
-Para evaluar el proyecto de punta a punta en un entorno limpio, sigue estos pasos:
+Para evaluar la aplicación renderizada en el servidor de punta a punta en un entorno limpio:
 
-**1. Clonar el repositorio y acceder a la rama `tp3`:**
+**1. Clonar el repositorio y acceder a la rama `tp5`:**
 ```bash
 git clone https://github.com/mdelrosariocoronado/prog_web.git
 cd prog_web
-git checkout tp3
+git checkout tp5
 ```
 
-**2. Configurar las variables de entorno:**
+**2. Ejecutar la aplicación con el ciclo completo automatizado:**
 ```bash
-cp .env.example .env
+make run-app
 ```
 
-**3. Ejecutar la suite completa de pruebas de la API:**
+Este comando ejecuta automáticamente las tres etapas requeridas por la cátedra:
+1. **Tareas previas:**
+   * Ejecución de `sqlc generate` y compilación de componentes de vista con `templ generate`.
+   * Compilación del servidor Go (`go build`).
+   * Limpieza de contenedores y volúmenes previos (`docker compose down -v --remove-orphans`).
+   * Levantamiento del contenedor de base de datos PostgreSQL (`docker compose up -d db`) y espera activa hasta que acepte conexiones (`pg_isready`).
+   * Aplicación de migraciones DDL con Atlas.
+2. **Ejecución de la aplicación:**
+   * Inicia el servidor HTTP en **`http://localhost:8080`**.
+3. **Tareas posteriores (al detener con `Ctrl+C`):**
+   * Captura la señal de cierre y elimina automáticamente los contenedores, volúmenes y binarios temporales creados.
+
+---
+
+## Inicio Rápido: Pruebas Automatizadas de la API (TP 3)
+
+Para ejecutar la suite automatizada de pruebas end-to-end sobre los endpoints REST:
+
 ```bash
 make test-api
 ```
 *(O de forma equivalente ejecutando directamente el script: `./test-api.sh`)*
 
-Este único comando realiza automáticamente todo el ciclo requerido:
-* **Tareas previas:** Generación de código con `sqlc`, validación de compilación, limpieza de contenedores y volúmenes previos, levantamiento de la base de datos en Docker, espera hasta que PostgreSQL esté listo, aplicación de migraciones DDL con Atlas, y levantamiento de la aplicación web esperando a que esté disponible.
-* **Pruebas de la API:** Ejecuta la suite completa de pruebas end-to-end con `curl` (`requests.sh`) cubriendo cada uno de los endpoints.
-* **Tareas posteriores:** Limpieza y borrado de todos los contenedores y volúmenes temporales creados.
+---
+
+## Guía de Otros Comandos del `Makefile`
+
+* **`make run-app`:** Ciclo completo del TP5 (tareas previas + servidor en `http://localhost:8080` + limpieza posterior de contenedores y volúmenes al salir).
+* **`make generate`:** Regenera el código Go de `sqlc` (`db/sqlc/`) y de `templ` (`views/*_templ.go`).
+* **`make run`:** Genera las vistas `templ`, levanta PostgreSQL en Docker, aplica migraciones e inicia el servidor localmente.
+* **`make test`:** Ejecuta los tests unitarios y de integración en Go levantando y limpiando la BD automáticamente.
 
 ---
 
-## Guía de Ejecución del Servidor
+## Tabla de Rutas y Endpoints
 
-Si deseas levantar el servidor para interactuar manualmente con la API o las vistas web:
-
-### Opción 1: Ejecución completa en Docker (Recomendada)
-Levanta tanto PostgreSQL como el servidor Go en contenedores aislados:
-```bash
-# Construye, levanta los servicios y aplica migraciones:
-make docker-up
-
-# Para detener todos los contenedores:
-make docker-down
-```
-El servidor estará disponible en `http://localhost:8080`.
-
-### Opción 2: Ejecución Local Nativa (Servidor Go local + BD en Docker)
-Ejecuta la base de datos en Docker y el binario Go directamente en tu máquina:
-```bash
-# Levanta la BD en Docker, aplica migraciones e inicia el servidor Go:
-make run
-
-# Para detener todos los contenedores:
-make docker-down
-```
-
-### Vistas Web del Proyecto (TP 1)
-Con el servidor en ejecución, podés acceder desde cualquier navegador web a:
-* **Catálogo e información estática:** `http://localhost:8080/static/` (presentación de entidades y atributos del TP1).
-* **Formulario de gestión:** `http://localhost:8080/users`.
-* **Chequeo de salud del servicio:** `http://localhost:8080/health`.
-
----
-
-## Tabla de Endpoints de la API
-
-### Sistema y Vistas Estáticas
-| Método | Ruta | Código Éxito | Errores Posibles | Descripción |
-| :--- | :--- | :--- | :--- | :--- |
-| `GET` | `/health` | `200 OK` | `500` | Chequeo de estado del servidor |
-| `GET` | `/static/` | `200 OK` | `404` | Archivos estáticos de la interfaz web |
-| `GET` | `/` | `200 OK` | `500` | Página de inicio |
-| `GET` | `/users` | `200 OK` | `500` | Formulario de gestión de usuarios |
+### Vistas Dinámicas SSR con `templ` (TP 5)
+| Método | Ruta | Respuesta | Descripción |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | `200 OK` (HTML) | Página principal renderizada en el servidor (Gestión de Emprendimientos) |
+| `GET` | `/emprendimientos` | `200 OK` (HTML) | Vista SSR con formulario de alta y tabla de emprendimientos |
+| `POST` | `/emprendimientos` | `303 See Other` | Procesa el formulario de nuevo emprendimiento y redirige a `/emprendimientos` (PRG) |
+| `GET` | `/usuarios` | `200 OK` (HTML) | Vista SSR con formulario de alta y tabla de usuarios |
+| `POST` | `/usuarios` | `303 See Other` | Procesa el formulario de nuevo usuario y redirige a `/usuarios` (PRG) |
+| `GET` | `/publicaciones` | `200 OK` (HTML) | Vista SSR con formulario de alta y listado de publicaciones |
+| `POST` | `/publicaciones` | `303 See Other` | Procesa el formulario de nueva publicación y redirige a `/publicaciones` (PRG) |
+| `GET` | `/static/` | `200 OK` | Servidor de archivos estáticos (hoja de estilos `style.css` e imágenes) |
+| `GET` | `/health` | `200 OK` | Chequeo de estado del servidor |
 
 ### Emprendimientos (`/api/emprendimientos`)
 | Método | Ruta | Código Éxito | Errores Posibles | Descripción |

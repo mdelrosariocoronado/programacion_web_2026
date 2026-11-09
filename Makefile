@@ -17,11 +17,17 @@ DB_HOST ?= localhost
 
 DB_URL := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable
 
-.PHONY: test build clean generate e2e docker-up docker-down test-api run
+.PHONY: test build clean generate e2e docker-up docker-down test-api run run-app
+
+generate:
+	@printf "$(CYAN)___________________ Generando codigo con SQLC y Templ ___________________$(RESET)\n"
+	sqlc generate
+	go run github.com/a-h/templ/cmd/templ@latest generate
 
 test:
-	@printf "$(CYAN)___________________ Generando codigo con SQLC ___________________$(RESET)\n"
+	@printf "$(CYAN)___________________ Generando codigo con SQLC y Templ ___________________$(RESET)\n"
 	sqlc generate
+	go run github.com/a-h/templ/cmd/templ@latest generate
 	@printf " "
 	
 	@printf "$(YELLOW)___________________ Limpiando contenedores y volumenes previos ___________________$(RESET)\n"
@@ -56,9 +62,11 @@ test:
 	docker compose down -v --remove-orphans
 	@printf " "
 
-	@printf "$(GREEN)________________________ Proceso finalizado del TP2 ____________$(RESET)\n"
+	@printf "$(GREEN)________________________ Proceso finalizado ____________$(RESET)\n"
 
 run:
+	@printf "$(CYAN)Generando vistas con Templ...$(RESET)\n"
+	go run github.com/a-h/templ/cmd/templ@latest generate
 	@printf "$(GREEN)Levantando base de datos...$(RESET)\n"
 	docker compose up -d db
 	@until docker compose exec -T db pg_isready -U $(DB_USER) -d $(DB_NAME) > /dev/null 2>&1; do \
@@ -67,6 +75,27 @@ run:
 	atlas migrate apply --dir "file://db/migrations" --url "$(DB_URL)"
 	@echo "Iniciando servidor..."
 	go run cmd/server/main.go
+
+run-app:
+	@printf "$(CYAN)___________________ 1. Tareas previas: SQLC y Templ ___________________$(RESET)\n"
+	sqlc generate
+	go run github.com/a-h/templ/cmd/templ@latest generate
+	@printf "$(CYAN)___________________ Compilando aplicacion Go ___________________$(RESET)\n"
+	go build -o bin/server ./cmd/server
+	@printf "$(YELLOW)___________________ Limpiando contenedores y volumenes previos ___________________$(RESET)\n"
+	docker compose down -v --remove-orphans
+	@printf "$(CYAN)___________________ Levantando contenedor de Base de Datos ___________________$(RESET)\n"
+	docker compose up -d db
+	@printf "Esperando a que la base de datos este lista para recibir conexiones...\n"
+	@until docker compose exec -T db pg_isready -U $(DB_USER) -d $(DB_NAME) > /dev/null 2>&1; do \
+		sleep 1; \
+	done
+	@printf "$(GREEN)- Base de datos lista para recibir conexiones$(RESET)\n"
+	@printf "$(YELLOW)___________________ Aplicando migraciones a la base de datos ___________________$(RESET)\n"
+	atlas migrate apply --dir "file://db/migrations" --url "$(DB_URL)"
+	@printf "$(GREEN)___________________ 2. Ejecutando la aplicacion (Ctrl+C para detener y limpiar) ___________________$(RESET)\n"
+	@trap 'printf "\n$(YELLOW)___________________ 3. Tareas posteriores: Limpiando contenedores y volumenes ___________________$(RESET)\n"; docker compose down -v --remove-orphans; rm -rf bin; printf "$(GREEN)Limpieza completada.$(RESET)\n"' EXIT INT TERM; \
+	./bin/server
 
 e2e:
 	@chmod +x requests.sh

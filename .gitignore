@@ -15,7 +15,8 @@ temp/
 *.dll
 *.so
 *.dylib
-server        
+server
+bin/
 
 # Correccion de tp2
 
