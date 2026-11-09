@@ -3,88 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PORTAL DE EMPRENDIMIENTOS</title>
+    <title>RED DE EMPRENDIMIENTOS - TANDIL </title>
 
     <link rel="icon" type="image/png" href="./images/mapa.png">
     <link rel="stylesheet" type="text/css" href="./style.css" />
 </head>
 
 <body>
-    <div class="contenedor-titulo">
-        <div class="icono"> </div>
-        <div>
-            <h1>PORTAL DE EMPRENDIMIENTOS</h1>
-            <p> Red centralizada de emprendimientos en Tandil. Para conectar clientes con productos/servicios. </p>
+    <header>
+        <div class="main-header">
+            <div >
+                <img class="icono" src="./images/mapa.png" alt="Logo de la red de emprendimientos">
+            </div>
+            <div class="titulo">
+                <h1> RED DE EMPRENDIMIENTOS - TANDIL</h1>
+            </div>
         </div>
-    </div>
-    <div class="contenedor-contenido">
-        <h2>ENTIDADES</h2>
-        <div class="contenedor-entidades"> 
-            <div class="entidad">
-                <div> 
-                    <h3>USUARIO</h3>
-                    <p>Cualquier persona que se registre en la plataforma</p>
-                </div>
-                <ul>
-                    <li>IDUsuario (PK)</li>
-                    <li>Contraseña</li>
-                    <li>Nombre completo</li>
-                    <li>Email</li>
-                    <li>Rol: emprendedor/cliente/administrador</li>
-                    <li>IDEmprendimiento (FK): permite tener mas de un usuario relacionado a un emprendimiento</li>
+        <div >
+            <nav class="main-nav">
+                <ul class="main-ul">
+                    <button class="tab-btn active" data-entity="emprendimientos">Emprendimientos</button>
+                    <button class="tab-btn" data-entity="usuarios">Usuarios</button>
+                    <button class="tab-btn" data-entity="publicaciones">Publicaciones</button>
+                    <button class="tab-btn" data-entity="suscripciones">Suscripciones</button>
                 </ul>
-            </div>
-            <div class="entidad">
-                <div>
-                    <h3>EMPRENDIMIENTO</h3>
-                    <p>El negocio registrado por algún usuario emprendedor</p>
+            </nav>
+        </div>
+    </header>
+
+    <main class="portal-layout">
+        <section class="portal-card form-section">
+            <h2> Registrar Emprendimiento</h2>
+            <form id=""form-emprendimiento" >
+                <div class="form-group">
+                    <label for="nombre">Nombre (*): </label>
+                    <input type="text" id="nombre" name="nombre" required placeholder="Velas tadil">
                 </div>
-                <ul>
-                    <li>IDEmprendimiento (PK)</li>
-                    <li>Nombre</li>
-                    <li>Url</li>
-                    <li>Rubro</li>
-                    <li>Descripcion</li>
-                    <li>Logo</li>
-                    <li>Contacto</li>
-                    <li>Activo: Boulean (True -> publicaciones en X lapsus de tiempo)</li>
-                </ul>
-            </div>
-            <div class="entidad">
-                <div> 
-                    <h3>PUBLICACION</h3>
-                    <p>lo que publica el emprendedor en la url de su emprendimiento</p>
+                <div class="form-group">
+                    <label for="Rubro">Rubro:</label>
+                    <input type="text" id="Rubro" name="Rubro" required>
                 </div>
+                <div class="form-group">
+                    <label for="descripcion">Descripción:</label>
+                    <textarea id="descripcion" name="descripcion" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoría:</label>
+                    <input type="text" id="categoria" name="categoria" required>
+                </div>  
+
+                <div class="form-group">
+                    <label for="ubicacion">Ubicación:</label>
+                    <input type="text" id="ubicacion" name="ubicacion" required>
+                </div>
+                <div class="form-group">
+                    <label for="url">URL paginas????/</label>
+                    <input type="text" id="url" name="url" required placeholder="https://instagram/../..com">
+                </div>
+                <div class="form-group">
+                    <label for="contacto">Contacto: </label>
+                    <input type="text" id="contacto" name="contacto" required placeholder="(0249) 154-123456">
+
+                </div>
+                <div class="eliminar-container"
+                    <button class="btn-eliminar-emp" type="submit">Registrar Emprendimiento</button>
+                </div>
+            </form>
+        </section> 
+        
+        <section class="portal-card list-section">
+            <h2>Lista de Emprendimientos</h2>
+            <div id="emprendimientos-list" class="emprendimientos-list">
                 
-                <ul>
-                    <li>IDPub (PK)</li>
-                    <li>IDEmprendimiento (PK - FK)</li>
-                    <li>Titulo</li>
-                    <li>Contenido</li>
-                    <li>Foto/imagen</li>
-                    <li>Tipo: producto/promocion/etc</li>
-                    <li>Precio</li>
-                    <li>FechaCreacion</li>
-                </ul>
-            </div>
-            <div class="entidad">
-                <div>
-                    <h3>SUSCRIPCION</h3>
-                    <p>Relación entre los usuarios normales y los emprendimientos que siguen</p>
-                </div>
-                
-                <ul>
-                    <li>IDSub (PK)</li>
-                    <li>IDEmprendimiento</li>
-                    <li>FechaSub</li>
-                    <li>IDUsuario (FK)</li>
-                    <li>IDemprendimiento (FK)</li>
-                </ul>
             </div>
 
-        </div>
-    </div>
-    
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+
 </body>
 </html>
 

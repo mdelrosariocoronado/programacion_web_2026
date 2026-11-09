@@ -1,3 +1,10 @@
+:root {
+    --primary-color: #1c4e5b;
+    --secondary-color:  #82c99a; 
+    --back-gray: #eae9ed;
+    --cards-color:#fce5c8;
+    --accent-color: #5b98c4;
+}
 
 * {
     box-sizing: border-box;
@@ -7,10 +14,12 @@
 
 body{
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color:darkseagreen;
-    color:darkslategrey;
+    background-color: var (var(--secondary-color));
+    color:var(--primary-color);
     padding-bottom: 40px;
 }
+
+.main-header { display:flex; justify-content: center; align-items: center; margin-bottom: 2rem;  margin-top: 2rem; } 
 
 .icono{
     margin-right:20px;
@@ -24,81 +33,65 @@ body{
 }
 
 
-
-.contenedor-titulo{
-    display:flex;
+.main-nav{
+    list-style: none;
+    color: var(--primary-color);
     align-items: center;
-    background-color:bisque;
-    padding:30px;
-    margin-bottom:20px;
+    background-color: var(--secondary-color);
+    padding: 10px 10px;
+    margin-bottom: 20px;
 }
 
-.contenedor-titulo h1 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
 
-.contenedor-titulo p {
-    color: #555;
-    font-size: 0.95rem;
-    margin-top: 2px;
-}
-
-.contenedor-contenido{
+.main-ul{
     display: flex;
-    flex-direction: column;
+    color: var(--primary-color);
     align-items: center;
-    width: 90%;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-    justify-content: center; 
-    background-color:darkseagreen;
-    border-radius:10px;
+    justify-content: space-around;
+    margin: 20px;
 }
 
-.contenedor-contenido > h2 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-    color:darkslategrey;
-    letter-spacing: 1px;
-}
-
-.contenedor-entidades{
-    width: 100%;
-    margin:20px;
-    padding:10px;
-    border-radius:10px;
-    background-color:azure;
+nav ul {
+    list-style: none;
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    
+    justify-content: space-around;
+    padding: 10px 0;
+    margin-bottom: 20px;
 }
 
-.entidad{
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    background-color:bisque;
-    padding: 20px;
-    border-radius: 8px;
+.tab-btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    background-color: var(--secondary-color);
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: background 0.3s;
 }
 
-.entidad > div {
-    width: 30%;
+.tab-btn.active {
+    border-color: 4px var(--primary-color);
+    background-color: var(--back-gray);
+    color: var(--primary-color);
 }
 
-.entidad h3 {
-    font-size: 1.15rem;
-    margin-bottom: 6px;
-    color: #1b4332;
+.tab-btn:hover {
+    background-color: var(--accent-color);
+    color: white;
 }
 
-.entidad p {
-    font-size: 0.9rem;
-    color: #444;
-    line-height: 1.4;
-}
 
+.portal-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; max-width: 1200px; margin: 0 auto; } 
+
+
+@media (max-width: 768px) { 
+    .portal-layout { grid-template-columns: 1fr; } } 
+    .portal-card { background: var(--cards-color); border-radius: 8px; padding: 1.5rem; } 
+    .form-group { margin-bottom: 1rem; } 
+    .form-group label { display: block; margin-bottom: 0.3rem; font-weight: bold; } 
+    .form-group input, .form-group textarea { width: 100%; padding: 0.6rem; border: 1px solid var(--secondary-color); border-radius: 4px; } 
+    .btn-primary { width: 100%; padding: 0.75rem; background-color: var(--primary-color); color: var(--cards-color); border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; } 
+    .emp-card { border: 1px solid var(--accent-color); border-left: 4px solid var(--accent-color); padding: 1rem; margin-bottom: 0.8rem; border-radius: 4px; background:var(--cards-color); display: flex; justify-content: space-between; align-items: center; } 
+    .eliminar-container{ display: flex; align-items: center; margin-top: 1rem; }
+    .btn-eliminar-emp { background-color: white; color: var(--primary-color); border: 4px var(--primary-color); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
+.btn-eliminar-emp:hover { background-color: var(--back-gray) }
