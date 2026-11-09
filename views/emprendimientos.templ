@@ -1,0 +1,108 @@
+package views
+
+import (
+	"fmt"
+	"emprendimientos.com/servidor-go/internal/services"
+)
+
+// EmprendimientoForm renderiza el formulario clásico (POST /emprendimientos) para dar de alta un emprendimiento.
+templ EmprendimientoForm() {
+	<section style="width: 100%; margin-bottom: 2rem;">
+		<article>
+			<h3>Nuevo Emprendimiento</h3>
+			<form method="POST" action="/emprendimientos">
+				<div class="grid">
+					<label>
+						Nombre *
+						<input type="text" name="nombre" placeholder="Ej: Cafetería Las Orquídeas" required/>
+					</label>
+					<label>
+						Rubro *
+						<input type="text" name="rubro" placeholder="Ej: Gastronomía" required/>
+					</label>
+				</div>
+				<label>
+					Descripción
+					<input type="text" name="descripcion" placeholder="Breve descripción del emprendimiento"/>
+				</label>
+				<div class="grid">
+					<label>
+						Contacto
+						<input type="text" name="contacto" placeholder="Teléfono, Instagram o email"/>
+					</label>
+					<label>
+						Sitio Web (URL)
+						<input type="url" name="url" placeholder="https://ejemplo.com"/>
+					</label>
+					<label>
+						Logo (URL de imagen)
+						<input type="text" name="logo" placeholder="https://ejemplo.com/logo.png"/>
+					</label>
+				</div>
+				<button type="submit">Crear Emprendimiento</button>
+			</form>
+		</article>
+	</section>
+}
+
+// EmprendimientoList recibe el slice tipado de emprendimientos y renderiza la tabla o un mensaje si está vacía.
+templ EmprendimientoList(items []services.EmprendimientoResponse) {
+	<section style="width: 100%;">
+		<article>
+			<h3>Listado de Emprendimientos</h3>
+			if len(items) == 0 {
+				<p>No hay emprendimientos registrados todavía.</p>
+			} else {
+				<figure>
+					<table role="grid">
+						<thead>
+							<tr>
+								<th scope="col">ID</th>
+								<th scope="col">Nombre</th>
+								<th scope="col">Rubro</th>
+								<th scope="col">Descripción</th>
+								<th scope="col">Contacto</th>
+								<th scope="col">Web</th>
+								<th scope="col">Activo</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, emp := range items {
+								<tr>
+									<td>{ fmt.Sprint(emp.IDEmprendimiento) }</td>
+									<td><strong>{ emp.Nombre }</strong></td>
+									<td>{ emp.Rubro }</td>
+									<td>{ emp.Descripcion }</td>
+									<td>{ emp.Contacto }</td>
+									<td>
+										if emp.Url != "" {
+											<a href={ templ.SafeURL(emp.Url) } target="_blank">Visitar</a>
+										} else {
+											<span>-</span>
+										}
+									</td>
+									<td>
+										if emp.Activo {
+											<span>Sí</span>
+										} else {
+											<span>No</span>
+										}
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</figure>
+			}
+		</article>
+	</section>
+}
+
+// EmprendimientosPage es el componente de página principal para Emprendimientos que compone Layout, Form y List.
+templ EmprendimientosPage(items []services.EmprendimientoResponse) {
+	@Layout("Emprendimientos") {
+		<h2>Gestión de Emprendimientos</h2>
+		@EmprendimientoForm()
+		@EmprendimientoList(items)
+	}
+}
