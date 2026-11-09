@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"emprendimientos.com/servidor-go/internal/services"
+	"emprendimientos.com/servidor-go/views"
 )
 
 type EmprendimientoHandler struct {
@@ -16,6 +17,49 @@ func NewEmprendimientoHandler(service *services.EmprendimientoService) *Emprendi
 	return &EmprendimientoHandler{
 		service: service,
 	}
+}
+
+// RenderPage: GET / y GET /emprendimientos (SSR con Templ)
+func (h *EmprendimientoHandler) RenderPage(w http.ResponseWriter, r *http.Request) {
+	lista, err := h.service.List(r.Context())
+	if err != nil {
+		http.Error(w, "Error al obtener la lista de emprendimientos: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := views.EmprendimientosPage(lista).Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al renderizar la vista: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// CreateFromForm: POST /emprendimientos (Manejo de formulario clásico con patrón Post/Redirect/Get)
+func (h *EmprendimientoHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Error al procesar los datos del formulario", http.StatusBadRequest)
+		return
+	}
+
+	input := services.CreateEmprendimientoInput{
+		Nombre:      r.FormValue("nombre"),
+		Rubro:       r.FormValue("rubro"),
+		Descripcion: r.FormValue("descripcion"),
+		Contacto:    r.FormValue("contacto"),
+		Url:         r.FormValue("url"),
+		Logo:        r.FormValue("logo"),
+	}
+
+	_, err := h.service.Create(r.Context(), input)
+	if err != nil {
+		if errors.Is(err, services.ErrNombreRequerido) || errors.Is(err, services.ErrRubroRequerido) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "Error al crear el emprendimiento: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Patrón Post/Redirect/Get (PRG): redirige a la vista de emprendimientos para recargar la lista actualizada
+	http.Redirect(w, r, "/emprendimientos", http.StatusSeeOther)
 }
 
 // Create: POST /api/emprendimientos

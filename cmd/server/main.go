@@ -79,8 +79,10 @@ func main() {
 	fileServer := http.FileServer(http.Dir("./static"))
 	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
-	//captura cualquier ruta que no coincida con una definida -> ponemos el inicio estatico
-	router.HandleFunc("/", usuarioHandler.HandleUsers)
+	// Vistas SSR con Templ (TP5)
+	router.HandleFunc("GET /{$}", empHandler.RenderPage)
+	router.HandleFunc("GET /emprendimientos", empHandler.RenderPage)
+	router.HandleFunc("POST /emprendimientos", empHandler.CreateFromForm)
 
 	// endpoint del formulario. verificar si lo dejamos al formulario
 	router.HandleFunc("/users", usuarioHandler.HandleUsers)
