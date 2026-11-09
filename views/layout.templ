@@ -1,0 +1,32 @@
+package views
+
+templ Layout(title string) {
+	<!DOCTYPE html>
+	<html lang="es">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title } - Portal de Emprendimientos</title>
+			<link rel="icon" type="image/png" href="/static/images/mapa.png"/>
+			<link rel="stylesheet" type="text/css" href="/static/style.css"/>
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+		</head>
+		<body>
+			<header class="contenedor-titulo">
+				<div class="icono"></div>
+				<div>
+					<h1>PORTAL DE EMPRENDIMIENTOS</h1>
+					<p>Red centralizada de emprendimientos en Tandil. Para conectar clientes con productos/servicios.</p>
+					<nav>
+						<a href="/emprendimientos">Emprendimientos</a> |
+						<a href="/usuarios">Usuarios</a> |
+						<a href="/publicaciones">Publicaciones</a>
+					</nav>
+				</div>
+			</header>
+			<main class="contenedor-contenido container">
+				{ children... }
+			</main>
+		</body>
+	</html>
+}
