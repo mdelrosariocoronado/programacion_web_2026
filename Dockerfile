@@ -1,6 +1,6 @@
 # BUILDER___________________________________
 
-FROM golang:1.24-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 # directorio de trabajo en el contenedor de compilación
 WORKDIR /app  
@@ -28,6 +28,8 @@ WORKDIR /app
 # copia  binario compilado desde la etapa 'BUILDER'
 COPY --from=builder /app/api /usr/local/bin/api
 
+# copia archivos estáticos (CSS e imágenes para las vistas SSR)
+COPY --from=builder /app/static /app/static
 
 USER app
 EXPOSE 8080
