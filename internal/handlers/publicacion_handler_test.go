@@ -14,9 +14,17 @@ import (
 type mockPublicacionService struct {
 	createFunc func(ctx context.Context, input services.CreatePublicacionInput) (db.Publicacione, error)
 	getByIDFunc func(ctx context.Context, id int32) (db.Publicacione, error)
+	listFunc func(ctx context.Context) ([]db.Publicacione, error)
 	listByEmprendimientoFunc func(ctx context.Context, idEmprendimiento int32) ([]db.Publicacione, error)
 	updateFunc func(ctx context.Context, id int32, input services.UpdatePublicacionInput) error
 	deleteFunc func(ctx context.Context, id int32) error
+}
+
+func (m *mockPublicacionService) List(ctx context.Context) ([]db.Publicacione, error) {
+	if m.listFunc != nil {
+		return m.listFunc(ctx)
+	}
+	return []db.Publicacione{}, nil
 }
 
 func (m *mockPublicacionService) Create(ctx context.Context, input services.CreatePublicacionInput) (db.Publicacione, error) {
@@ -208,6 +216,59 @@ func TestPublicacionHandler_Delete(t *testing.T) {
 
 		if rr.Code != http.StatusNotFound {
 			t.Errorf("se esperaba status %d, se obtuvo %d", http.StatusNotFound, rr.Code)
+		}
+	})
+}
+
+func TestPublicacionHandler_RenderPage(t *testing.T) {
+	mockSvc := &mockPublicacionService{}
+	handler := NewPublicacionHandler(mockSvc)
+
+	req := httptest.NewRequest(http.MethodGet, "/publicaciones", nil)
+	rr := httptest.NewRecorder()
+
+	handler.RenderPage(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("RenderPage devolvió código %v, se esperaba %v", rr.Code, http.StatusOK)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Gestión de Publicaciones") {
+		t.Errorf("Se esperaba que la respuesta contenga 'Gestión de Publicaciones', se obtuvo: %s", body)
+	}
+}
+
+func TestPublicacionHandler_CreateFromForm(t *testing.T) {
+	mockSvc := &mockPublicacionService{}
+	handler := NewPublicacionHandler(mockSvc)
+
+	t.Run("exito_303_SeeOther_y_redirect", func(t *testing.T) {
+		formData := "id_emprendimiento=1&titulo=Promo+Cafe&tipo=promocion&precio=150.00"
+		req := httptest.NewRequest(http.MethodPost, "/publicaciones", strings.NewReader(formData))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		rr := httptest.NewRecorder()
+		handler.CreateFromForm(rr, req)
+
+		if rr.Code != http.StatusSeeOther {
+			t.Errorf("Se esperaba código %d, se obtuvo %d", http.StatusSeeOther, rr.Code)
+		}
+		if loc := rr.Header().Get("Location"); loc != "/publicaciones" {
+			t.Errorf("Se esperaba redirección a '/publicaciones', se obtuvo '%s'", loc)
+		}
+	})
+
+	t.Run("falla_400_con_id_emprendimiento_invalido", func(t *testing.T) {
+		formData := "id_emprendimiento=abc&titulo=Promo+Cafe&tipo=promocion"
+		req := httptest.NewRequest(http.MethodPost, "/publicaciones", strings.NewReader(formData))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		rr := httptest.NewRecorder()
+		handler.CreateFromForm(rr, req)
+
+		if rr.Code != http.StatusBadRequest {
+			t.Errorf("Se esperaba código %d ante id_emprendimiento inválido, se obtuvo %d", http.StatusBadRequest, rr.Code)
 		}
 	})
 }

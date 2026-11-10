@@ -13,9 +13,17 @@ import (
 type mockPublicacionRepo struct {
 	createFunc func(ctx context.Context, params db.CreatePublicacionParams) (db.Publicacione, error)
 	getByIDFunc func(ctx context.Context, id int32) (db.Publicacione, error)
+	listFunc func(ctx context.Context) ([]db.Publicacione, error)
 	listByEmprendimientoFunc func(ctx context.Context, idEmprendimiento int32) ([]db.Publicacione, error)
 	updateFunc func(ctx context.Context, params db.UpdatePublicacionParams) error
 	deleteFunc func(ctx context.Context, id int32) error
+}
+
+func (m *mockPublicacionRepo) List(ctx context.Context) ([]db.Publicacione, error) {
+	if m.listFunc != nil {
+		return m.listFunc(ctx)
+	}
+	return []db.Publicacione{}, nil
 }
 
 func (m *mockPublicacionRepo) Create(ctx context.Context, params db.CreatePublicacionParams) (db.Publicacione, error) {

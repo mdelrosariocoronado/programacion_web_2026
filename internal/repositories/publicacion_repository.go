@@ -10,6 +10,7 @@ import (
 type PublicacionRepo interface {
 	Create(ctx context.Context, params db.CreatePublicacionParams) (db.Publicacione, error)
 	GetByID(ctx context.Context, id int32) (db.Publicacione, error)
+	List(ctx context.Context) ([]db.Publicacione, error)
 	ListByEmprendimiento(ctx context.Context, idEmprendimiento int32) ([]db.Publicacione, error)
 	Update(ctx context.Context, params db.UpdatePublicacionParams) error
 	Delete(ctx context.Context, id int32) error
@@ -35,6 +36,11 @@ func (r *publicacionRepository) Create(ctx context.Context, params db.CreatePubl
 // GetByID busca una publicacion por su ID
 func (r *publicacionRepository) GetByID(ctx context.Context, id int32) (db.Publicacione, error) {
 	return r.queries.GetPublicacion(ctx, id)
+}
+
+// List obtiene todas las publicaciones registradas
+func (r *publicacionRepository) List(ctx context.Context) ([]db.Publicacione, error) {
+	return r.queries.ListPublicaciones(ctx)
 }
 
 // ListByEmprendimiento obtiene todas las publicaciones asociadas a un emprendimiento

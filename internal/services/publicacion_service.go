@@ -43,6 +43,7 @@ type UpdatePublicacionInput struct {
 type PublicacionService interface {
 	Create(ctx context.Context, input CreatePublicacionInput) (db.Publicacione, error)
 	GetByID(ctx context.Context, id int32) (db.Publicacione, error)
+	List(ctx context.Context) ([]db.Publicacione, error)
 	ListByEmprendimiento(ctx context.Context, idEmprendimiento int32) ([]db.Publicacione, error)
 	Update(ctx context.Context, id int32, input UpdatePublicacionInput) error
 	Delete(ctx context.Context, id int32) error
@@ -144,6 +145,15 @@ func (s *publicacionService) GetByID(ctx context.Context, id int32) (db.Publicac
 	}
 
 	return pub, nil
+}
+
+// List lista todas las publicaciones registradas
+func (s *publicacionService) List(ctx context.Context) ([]db.Publicacione, error) {
+	pubs, err := s.repo.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error al listar publicaciones: %w", err)
+	}
+	return pubs, nil
 }
 
 // ListByEmprendimiento lista publicaciones validando el ID del emprendimiento

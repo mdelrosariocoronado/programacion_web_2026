@@ -15,8 +15,10 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"emprendimientos.com/servidor-go/internal/services"
+	"emprendimientos.com/servidor-go/views"
 )
 
 type UserHandler struct {
@@ -58,8 +60,68 @@ func (h *UserHandler) Home(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Página de inicio"))
 }
 
+// RenderPage: GET /usuarios (SSR con Templ)
+func (h *UserHandler) RenderPage(w http.ResponseWriter, r *http.Request) {
+	usuarios, err := h.service.ListarUsuarios(r.Context())
+	if err != nil {
+		http.Error(w, "Error al obtener la lista de usuarios: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := views.UsuariosPage(usuarios).Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al renderizar la vista: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func (h *UserHandler) HandleUsers(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Endpoint de usuarios"))
+	h.RenderPage(w, r)
+}
+
+// CreateFromForm: POST /usuarios (Manejo de formulario clásico con patrón Post/Redirect/Get)
+func (h *UserHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Error al procesar los datos del formulario", http.StatusBadRequest)
+		return
+	}
+
+	nombre := r.FormValue("nombre_completo")
+	email := r.FormValue("email")
+	clave := r.FormValue("clave")
+	rol := r.FormValue("rol")
+
+	var idEmprendimiento *int32
+	if idEmpStr := strings.TrimSpace(r.FormValue("id_emprendimiento")); idEmpStr != "" {
+		idVal, err := strconv.Atoi(idEmpStr)
+		if err != nil {
+			http.Error(w, "El ID de emprendimiento debe ser numérico", http.StatusBadRequest)
+			return
+		}
+		id32 := int32(idVal)
+		idEmprendimiento = &id32
+	}
+
+	_, err := h.service.CrearUsuario(
+		r.Context(),
+		nombre,
+		email,
+		clave,
+		rol,
+		idEmprendimiento,
+	)
+	if err != nil {
+		if errors.Is(err, services.ErrFormatoInvalidoEmail) ||
+			errors.Is(err, services.ErrClave) ||
+			errors.Is(err, services.ErrRolInvalido) ||
+			errors.Is(err, services.ErrNombreVacio) ||
+			errors.Is(err, services.ErrEmailDuplicado) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "error interno del servidor", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
 }
 
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {

@@ -3,8 +3,11 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"emprendimientos.com/servidor-go/internal/services"
+	"emprendimientos.com/servidor-go/views"
 )
 
 // PublicacionHandler maneja las peticiones HTTP de la entidad publicaciones
@@ -17,6 +20,66 @@ func NewPublicacionHandler(service services.PublicacionService) *PublicacionHand
 	return &PublicacionHandler{
 		service: service,
 	}
+}
+
+// RenderPage: GET /publicaciones (SSR con Templ)
+func (h *PublicacionHandler) RenderPage(w http.ResponseWriter, r *http.Request) {
+	pubs, err := h.service.List(r.Context())
+	if err != nil {
+		http.Error(w, "Error al obtener la lista de publicaciones: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := views.PublicacionesPage(pubs).Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al renderizar la vista: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// CreateFromForm: POST /publicaciones (Manejo de formulario clásico con patrón Post/Redirect/Get)
+func (h *PublicacionHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Error al procesar los datos del formulario", http.StatusBadRequest)
+		return
+	}
+
+	idEmpStr := strings.TrimSpace(r.FormValue("id_emprendimiento"))
+	idEmp, err := strconv.Atoi(idEmpStr)
+	if err != nil || idEmp <= 0 {
+		http.Error(w, "El ID de emprendimiento debe ser un número entero positivo", http.StatusBadRequest)
+		return
+	}
+
+	input := services.CreatePublicacionInput{
+		IDEmprendimiento: int32(idEmp),
+		Titulo:           r.FormValue("titulo"),
+		Tipo:             r.FormValue("tipo"),
+		Contenido:        r.FormValue("contenido"),
+		ImagenUrl:        r.FormValue("imagen_url"),
+	}
+
+	if precioStr := strings.TrimSpace(r.FormValue("precio")); precioStr != "" {
+		precio, err := strconv.ParseFloat(precioStr, 64)
+		if err != nil {
+			http.Error(w, "El precio debe ser un número válido", http.StatusBadRequest)
+			return
+		}
+		input.Precio = &precio
+	}
+
+	_, err = h.service.Create(r.Context(), input)
+	if err != nil {
+		if errors.Is(err, services.ErrTituloRequerido) ||
+			errors.Is(err, services.ErrTipoInvalido) ||
+			errors.Is(err, services.ErrPrecioInvalido) ||
+			errors.Is(err, services.ErrIDEmprendimientoInvalido) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "Error al crear la publicación: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/publicaciones", http.StatusSeeOther)
 }
 
 // Create: POST /api/publicaciones (201 Created)
