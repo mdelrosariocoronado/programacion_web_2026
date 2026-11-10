@@ -80,11 +80,20 @@ func main() {
 	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
 	// Vistas SSR con Templ (TP5)
+	// 1. Emprendimientos
 	router.HandleFunc("GET /{$}", empHandler.RenderPage)
 	router.HandleFunc("GET /emprendimientos", empHandler.RenderPage)
 	router.HandleFunc("POST /emprendimientos", empHandler.CreateFromForm)
 
-	// endpoint del formulario. verificar si lo dejamos al formulario
+	// 2. Usuarios
+	router.HandleFunc("GET /usuarios", usuarioHandler.RenderPage)
+	router.HandleFunc("POST /usuarios", usuarioHandler.CreateFromForm)
+
+	// 3. Publicaciones
+	router.HandleFunc("GET /publicaciones", pubHandler.RenderPage)
+	router.HandleFunc("POST /publicaciones", pubHandler.CreateFromForm)
+
+	// endpoint de compatibilidad
 	router.HandleFunc("/users", usuarioHandler.HandleUsers)
 
 	//Healthcheck endpoint
