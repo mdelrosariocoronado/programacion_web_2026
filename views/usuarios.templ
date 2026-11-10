@@ -1,0 +1,101 @@
+package views
+
+import (
+	"fmt"
+	"emprendimientos.com/servidor-go/db/sqlc"
+)
+
+// UsuarioForm renderiza el formulario (POST /usuarios) para dar de alta un nuevo usuario.
+templ UsuarioForm() {
+	<section style="width: 100%; margin-bottom: 2rem;">
+		<article>
+			<h3>Nuevo Usuario</h3>
+			<form method="POST" action="/usuarios">
+				<div class="grid">
+					<label>
+						Nombre Completo *
+						<input type="text" name="nombre_completo" placeholder="Ej: Juan Pérez" required/>
+					</label>
+					<label>
+						Email *
+						<input type="email" name="email" placeholder="juan@ejemplo.com" required/>
+					</label>
+				</div>
+				<div class="grid">
+					<label>
+						Contraseña *
+						<input type="password" name="clave" placeholder="Contraseña segura" required/>
+					</label>
+					<label>
+						Rol *
+						<select name="rol" required>
+							<option value="cliente">Cliente</option>
+							<option value="emprendedor">Emprendedor</option>
+							<option value="administrador">Administrador</option>
+						</select>
+					</label>
+					<label>
+						ID Emprendimiento
+						<input type="number" name="id_emprendimiento" placeholder="Opcional (Ej: 1)" min="1"/>
+					</label>
+				</div>
+				<button type="submit">Crear Usuario</button>
+			</form>
+		</article>
+	</section>
+}
+
+// UsuarioList recibe el slice tipado de usuarios y genera una tabla HTML con los datos del usuario
+// o una fila indicando "No hay usuarios registrados" si el slice está vacío.
+templ UsuarioList(usuarios []sqlc.Usuario) {
+	<section style="width: 100%;">
+		<article>
+			<h3>Listado de Usuarios</h3>
+			<figure>
+				<table role="grid">
+					<thead>
+						<tr>
+							<th scope="col">ID Usuario</th>
+							<th scope="col">Nombre Completo</th>
+							<th scope="col">Email</th>
+							<th scope="col">Rol</th>
+							<th scope="col">ID Emprendimiento</th>
+						</tr>
+					</thead>
+					<tbody>
+						if len(usuarios) == 0 {
+							<tr>
+								<td colspan="5" style="text-align: center;">No hay usuarios registrados</td>
+							</tr>
+						} else {
+							for _, u := range usuarios {
+								<tr>
+									<td>{ fmt.Sprint(u.IDUsuario) }</td>
+									<td>{ u.NombreCompleto }</td>
+									<td>{ u.Email }</td>
+									<td>{ u.Rol }</td>
+									<td>
+										if u.IDEmprendimiento.Valid {
+											{ fmt.Sprint(u.IDEmprendimiento.Int32) }
+										} else {
+											<span>-</span>
+										}
+									</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</figure>
+		</article>
+	</section>
+}
+
+// UsuariosPage compone Layout, UsuarioForm y UsuarioList.
+templ UsuariosPage(usuarios []sqlc.Usuario) {
+	@Layout("Usuarios") {
+		<h2>Gestión de Usuarios</h2>
+		@UsuarioForm()
+		@UsuarioList(usuarios)
+	}
+}

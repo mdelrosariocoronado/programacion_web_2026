@@ -1,0 +1,114 @@
+package views
+
+import (
+	"fmt"
+	"emprendimientos.com/servidor-go/db/sqlc"
+)
+
+// PublicacionForm renderiza el formulario clásico (POST /publicaciones) para crear una publicación.
+templ PublicacionForm() {
+	<section style="width: 100%; margin-bottom: 2rem;">
+		<article>
+			<h3>Nueva Publicación</h3>
+			<form method="POST" action="/publicaciones">
+				<div class="grid">
+					<label>
+						ID Emprendimiento *
+						<input type="number" name="id_emprendimiento" placeholder="Ej: 1" min="1" required/>
+					</label>
+					<label>
+						Título *
+						<input type="text" name="titulo" placeholder="Ej: Promo 2x1 en Cafés" required/>
+					</label>
+				</div>
+				<div class="grid">
+					<label>
+						Tipo *
+						<select name="tipo" required>
+							<option value="producto">Producto</option>
+							<option value="promocion">Promoción</option>
+							<option value="servicio">Servicio</option>
+							<option value="otro">Otro</option>
+						</select>
+					</label>
+					<label>
+						Precio (opcional)
+						<input type="number" step="0.01" min="0" name="precio" placeholder="Ej: 1500.00"/>
+					</label>
+				</div>
+				<label>
+					Contenido
+					<input type="text" name="contenido" placeholder="Detalle de la publicación..."/>
+				</label>
+				<label>
+					URL de Imagen
+					<input type="url" name="imagen_url" placeholder="https://ejemplo.com/imagen.jpg"/>
+				</label>
+				<button type="submit">Crear Publicación</button>
+			</form>
+		</article>
+	</section>
+}
+
+// PublicacionList recibe el slice tipado de publicaciones y genera una tabla HTML con los datos
+// o una fila indicando que no hay publicaciones registradas.
+templ PublicacionList(publicaciones []sqlc.Publicacione) {
+	<section style="width: 100%;">
+		<article>
+			<h3>Listado de Publicaciones</h3>
+			<figure>
+				<table role="grid">
+					<thead>
+						<tr>
+							<th scope="col">ID</th>
+							<th scope="col">ID Emprendimiento</th>
+							<th scope="col">Título</th>
+							<th scope="col">Tipo</th>
+							<th scope="col">Precio</th>
+							<th scope="col">Contenido</th>
+						</tr>
+					</thead>
+					<tbody>
+						if len(publicaciones) == 0 {
+							<tr>
+								<td colspan="6" style="text-align: center;">No hay publicaciones registradas</td>
+							</tr>
+						} else {
+							for _, p := range publicaciones {
+								<tr>
+									<td>{ fmt.Sprint(p.IDPublicacion) }</td>
+									<td>{ fmt.Sprint(p.IDEmprendimiento) }</td>
+									<td><strong>{ p.Titulo }</strong></td>
+									<td>{ p.Tipo }</td>
+									<td>
+										if p.Precio.Valid && p.Precio.String != "" {
+											<span>${ p.Precio.String }</span>
+										} else {
+											<span>-</span>
+										}
+									</td>
+									<td>
+										if p.Contenido.Valid && p.Contenido.String != "" {
+											{ p.Contenido.String }
+										} else {
+											<span>-</span>
+										}
+									</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</figure>
+		</article>
+	</section>
+}
+
+// PublicacionesPage compone Layout, PublicacionForm y PublicacionList.
+templ PublicacionesPage(publicaciones []sqlc.Publicacione) {
+	@Layout("Publicaciones") {
+		<h2>Gestión de Publicaciones</h2>
+		@PublicacionForm()
+		@PublicacionList(publicaciones)
+	}
+}
