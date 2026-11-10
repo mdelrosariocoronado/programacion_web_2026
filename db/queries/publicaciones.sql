@@ -24,6 +24,11 @@ FROM publicaciones
 WHERE id_emprendimiento = $1
 ORDER BY created_at DESC;
 
+-- name: ListPublicaciones :many
+SELECT id_publicacion, id_emprendimiento, titulo, contenido, imagen_url, tipo, precio, created_at
+FROM publicaciones
+ORDER BY created_at DESC;
+
 -- name: DeletePublicacion :exec
 DELETE FROM publicaciones
 WHERE id_publicacion = $1;

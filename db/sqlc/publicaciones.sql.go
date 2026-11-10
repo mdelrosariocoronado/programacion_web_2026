@@ -80,6 +80,44 @@ func (q *Queries) GetPublicacion(ctx context.Context, idPublicacion int32) (Publ
 	return i, err
 }
 
+const listPublicaciones = `-- name: ListPublicaciones :many
+SELECT id_publicacion, id_emprendimiento, titulo, contenido, imagen_url, tipo, precio, created_at
+FROM publicaciones
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListPublicaciones(ctx context.Context) ([]Publicacione, error) {
+	rows, err := q.db.QueryContext(ctx, listPublicaciones)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Publicacione
+	for rows.Next() {
+		var i Publicacione
+		if err := rows.Scan(
+			&i.IDPublicacion,
+			&i.IDEmprendimiento,
+			&i.Titulo,
+			&i.Contenido,
+			&i.ImagenUrl,
+			&i.Tipo,
+			&i.Precio,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPublicacionesByEmprendimiento = `-- name: ListPublicacionesByEmprendimiento :many
 SELECT id_publicacion, id_emprendimiento, titulo, contenido, imagen_url, tipo, precio, created_at
 FROM publicaciones
