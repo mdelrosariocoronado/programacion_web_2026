@@ -32,7 +32,7 @@ func EmprendimientoForm() templ.Component {
 		}
 		ctx = templ.InitializeContext(ctx)
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section style=\"width: 100%; margin-bottom: 2rem;\"><article><h3>Nuevo Emprendimiento</h3><form method=\"POST\" action=\"/emprendimientos\"><div class=\"grid\"><label>Nombre * <input type=\"text\" name=\"nombre\" placeholder=\"Ej: Cafetería Las Orquídeas\" required></label> <label>Rubro * <input type=\"text\" name=\"rubro\" placeholder=\"Ej: Gastronomía\" required></label></div><label>Descripción <input type=\"text\" name=\"descripcion\" placeholder=\"Breve descripción del emprendimiento\"></label><div class=\"grid\"><label>Contacto <input type=\"text\" name=\"contacto\" placeholder=\"Teléfono, Instagram o email\"></label> <label>Sitio Web (URL) <input type=\"url\" name=\"url\" placeholder=\"https://ejemplo.com\"></label> <label>Logo (URL de imagen) <input type=\"text\" name=\"logo\" placeholder=\"https://ejemplo.com/logo.png\"></label></div><button type=\"submit\">Crear Emprendimiento</button></form></article></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<section class=\"bloque-formulario\"><article><h3>Nuevo Emprendimiento</h3><form method=\"POST\" action=\"/emprendimientos\"><div class=\"grid\"><label>Nombre * <input type=\"text\" name=\"nombre\" placeholder=\"Ej: Cafetería Las Orquídeas\" required></label> <label>Rubro * <input type=\"text\" name=\"rubro\" placeholder=\"Ej: Gastronomía\" required></label></div><label>Descripción <input type=\"text\" name=\"descripcion\" placeholder=\"Breve descripción del emprendimiento\"></label><div class=\"grid\"><label>Contacto <input type=\"text\" name=\"contacto\" placeholder=\"Teléfono, Instagram o email\"></label> <label>Sitio Web (URL) <input type=\"url\" name=\"url\" placeholder=\"https://ejemplo.com\"></label> <label>Logo (URL de imagen) <input type=\"text\" name=\"logo\" placeholder=\"https://ejemplo.com/logo.png\"></label></div><button type=\"submit\" class=\"btn-principal\">Crear Emprendimiento</button></form></article></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -58,7 +58,7 @@ func EmprendimientoList(items []services.EmprendimientoResponse) templ.Component
 		}
 		ctx = templ.InitializeContext(ctx)
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<section style=\"width: 100%;\"><article><h3>Listado de Emprendimientos</h3>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<section class=\"bloque-listado\"><article><h3>Listado de Emprendimientos</h3>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -99,20 +99,20 @@ func EmprendimientoList(items []services.EmprendimientoResponse) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</strong></td><td>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</strong></td><td><span class=\"badge badge-rubro\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(emp.Rubro)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/emprendimientos.templ`, Line: 74, Col: 24}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/emprendimientos.templ`, Line: 74, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</td><td>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span></td><td>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -156,7 +156,7 @@ func EmprendimientoList(items []services.EmprendimientoResponse) templ.Component
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" target=\"_blank\">Visitar</a>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" target=\"_blank\" class=\"badge badge-destacado\" style=\"text-decoration:none;\">Visitar</a>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -171,12 +171,12 @@ func EmprendimientoList(items []services.EmprendimientoResponse) templ.Component
 					return templ_7745c5c3_Err
 				}
 				if emp.Activo {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<span>Sí</span>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<span class=\"badge badge-activo\">Sí</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<span>No</span>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<span class=\"badge badge-inactivo\">No</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -229,7 +229,7 @@ func EmprendimientosPage(items []services.EmprendimientoResponse) templ.Componen
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<h2>Gestión de Emprendimientos</h2>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<h2>Gestión de Emprendimientos</h2><div class=\"layout-principal\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -238,6 +238,10 @@ func EmprendimientosPage(items []services.EmprendimientoResponse) templ.Componen
 				return templ_7745c5c3_Err
 			}
 			templ_7745c5c3_Err = EmprendimientoList(items).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

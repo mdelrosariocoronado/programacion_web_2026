@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'Scripter';
+    src: url('Scripter-Regular.eot');
+    src: local('Scripter Regular'), local('Scripter-Regular'),
+        url('Scripter-Regular.eot?#iefix') format('embedded-opentype'),
+        url('Scripter-Regular.woff2') format('woff2'),
+        url('Scripter-Regular.woff') format('woff'),
+        url('Scripter-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+

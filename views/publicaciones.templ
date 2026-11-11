@@ -7,7 +7,7 @@ import (
 
 // PublicacionForm renderiza el formulario clásico (POST /publicaciones) para crear una publicación.
 templ PublicacionForm() {
-	<section style="width: 100%; margin-bottom: 2rem;">
+	<section class="bloque-formulario">
 		<article>
 			<h3>Nueva Publicación</h3>
 			<form method="POST" action="/publicaciones">
@@ -44,7 +44,7 @@ templ PublicacionForm() {
 					URL de Imagen
 					<input type="url" name="imagen_url" placeholder="https://ejemplo.com/imagen.jpg"/>
 				</label>
-				<button type="submit">Crear Publicación</button>
+				<button type="submit" class="btn-principal">Crear Publicación</button>
 			</form>
 		</article>
 	</section>
@@ -53,7 +53,7 @@ templ PublicacionForm() {
 // PublicacionList recibe el slice tipado de publicaciones y renderiza la tabla con los datos
 // controlando los campos sql.NullString (Precio, Contenido) y el caso de lista vacía.
 templ PublicacionList(pubs []sqlc.Publicacione) {
-	<section style="width: 100%;">
+	<section class="bloque-listado">
 		<article>
 			<h3>Listado de Publicaciones</h3>
 			<figure>
@@ -78,7 +78,18 @@ templ PublicacionList(pubs []sqlc.Publicacione) {
 								<tr>
 									<td>{ fmt.Sprint(p.IDPublicacion) }</td>
 									<td><strong>{ p.Titulo }</strong></td>
-									<td>{ p.Tipo }</td>
+									<td>
+										switch p.Tipo {
+											case "producto":
+												<span class="badge badge-producto">{ p.Tipo }</span>
+											case "promocion":
+												<span class="badge badge-promocion">{ p.Tipo }</span>
+											case "servicio":
+												<span class="badge badge-servicio">{ p.Tipo }</span>
+											default:
+												<span class="badge badge-otro">{ p.Tipo }</span>
+										}
+									</td>
 									<td>{ fmt.Sprint(p.IDEmprendimiento) }</td>
 									<td>
 										if p.Contenido.Valid && p.Contenido.String != "" {
@@ -89,7 +100,7 @@ templ PublicacionList(pubs []sqlc.Publicacione) {
 									</td>
 									<td>
 										if p.Precio.Valid && p.Precio.String != "" {
-											<span>${ p.Precio.String }</span>
+											<span class="badge badge-precio">${ p.Precio.String }</span>
 										} else {
 											<span>-</span>
 										}
@@ -108,7 +119,9 @@ templ PublicacionList(pubs []sqlc.Publicacione) {
 templ PublicacionesPage(pubs []sqlc.Publicacione) {
 	@Layout("Publicaciones") {
 		<h2>Gestión de Publicaciones</h2>
-		@PublicacionForm()
-		@PublicacionList(pubs)
+		<div class="layout-principal">
+			@PublicacionForm()
+			@PublicacionList(pubs)
+		</div>
 	}
 }

@@ -7,7 +7,7 @@ import (
 
 // UsuarioForm renderiza el formulario (POST /usuarios) para dar de alta un nuevo usuario.
 templ UsuarioForm() {
-	<section style="width: 100%; margin-bottom: 2rem;">
+	<section class="bloque-formulario">
 		<article>
 			<h3>Nuevo Usuario</h3>
 			<form method="POST" action="/usuarios">
@@ -39,7 +39,7 @@ templ UsuarioForm() {
 						<input type="number" name="id_emprendimiento" placeholder="Opcional (Ej: 1)" min="1"/>
 					</label>
 				</div>
-				<button type="submit">Crear Usuario</button>
+				<button type="submit" class="btn-principal">Crear Usuario</button>
 			</form>
 		</article>
 	</section>
@@ -48,7 +48,7 @@ templ UsuarioForm() {
 // UsuarioList recibe el slice tipado de usuarios y genera una tabla HTML con los datos del usuario
 // o una fila indicando "No hay usuarios registrados" si el slice está vacío.
 templ UsuarioList(usuarios []sqlc.Usuario) {
-	<section style="width: 100%;">
+	<section class="bloque-listado">
 		<article>
 			<h3>Listado de Usuarios</h3>
 			<figure>
@@ -73,7 +73,18 @@ templ UsuarioList(usuarios []sqlc.Usuario) {
 									<td>{ fmt.Sprint(u.IDUsuario) }</td>
 									<td>{ u.NombreCompleto }</td>
 									<td>{ u.Email }</td>
-									<td>{ u.Rol }</td>
+									<td>
+										switch u.Rol {
+											case "cliente":
+												<span class="badge badge-cliente">{ u.Rol }</span>
+											case "emprendedor":
+												<span class="badge badge-emprendedor">{ u.Rol }</span>
+											case "administrador":
+												<span class="badge badge-administrador">{ u.Rol }</span>
+											default:
+												<span class="badge badge-neutral">{ u.Rol }</span>
+										}
+									</td>
 									<td>
 										if u.IDEmprendimiento.Valid {
 											{ fmt.Sprint(u.IDEmprendimiento.Int32) }
@@ -95,7 +106,9 @@ templ UsuarioList(usuarios []sqlc.Usuario) {
 templ UsuariosPage(usuarios []sqlc.Usuario) {
 	@Layout("Usuarios") {
 		<h2>Gestión de Usuarios</h2>
-		@UsuarioForm()
-		@UsuarioList(usuarios)
+		<div class="layout-principal">
+			@UsuarioForm()
+			@UsuarioList(usuarios)
+		</div>
 	}
 }

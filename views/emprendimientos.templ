@@ -7,7 +7,7 @@ import (
 
 // EmprendimientoForm renderiza el formulario clásico (POST /emprendimientos) para dar de alta un emprendimiento.
 templ EmprendimientoForm() {
-	<section style="width: 100%; margin-bottom: 2rem;">
+	<section class="bloque-formulario">
 		<article>
 			<h3>Nuevo Emprendimiento</h3>
 			<form method="POST" action="/emprendimientos">
@@ -39,7 +39,7 @@ templ EmprendimientoForm() {
 						<input type="text" name="logo" placeholder="https://ejemplo.com/logo.png"/>
 					</label>
 				</div>
-				<button type="submit">Crear Emprendimiento</button>
+				<button type="submit" class="btn-principal">Crear Emprendimiento</button>
 			</form>
 		</article>
 	</section>
@@ -47,7 +47,7 @@ templ EmprendimientoForm() {
 
 // EmprendimientoList recibe el slice tipado de emprendimientos y renderiza la tabla o un mensaje si está vacía.
 templ EmprendimientoList(items []services.EmprendimientoResponse) {
-	<section style="width: 100%;">
+	<section class="bloque-listado">
 		<article>
 			<h3>Listado de Emprendimientos</h3>
 			if len(items) == 0 {
@@ -71,21 +71,21 @@ templ EmprendimientoList(items []services.EmprendimientoResponse) {
 								<tr>
 									<td>{ fmt.Sprint(emp.IDEmprendimiento) }</td>
 									<td><strong>{ emp.Nombre }</strong></td>
-									<td>{ emp.Rubro }</td>
+									<td><span class="badge badge-rubro">{ emp.Rubro }</span></td>
 									<td>{ emp.Descripcion }</td>
 									<td>{ emp.Contacto }</td>
 									<td>
 										if emp.Url != "" {
-											<a href={ templ.SafeURL(emp.Url) } target="_blank">Visitar</a>
+											<a href={ templ.SafeURL(emp.Url) } target="_blank" class="badge badge-destacado" style="text-decoration:none;">Visitar</a>
 										} else {
 											<span>-</span>
 										}
 									</td>
 									<td>
 										if emp.Activo {
-											<span>Sí</span>
+											<span class="badge badge-activo">Sí</span>
 										} else {
-											<span>No</span>
+											<span class="badge badge-inactivo">No</span>
 										}
 									</td>
 								</tr>
@@ -102,7 +102,9 @@ templ EmprendimientoList(items []services.EmprendimientoResponse) {
 templ EmprendimientosPage(items []services.EmprendimientoResponse) {
 	@Layout("Emprendimientos") {
 		<h2>Gestión de Emprendimientos</h2>
-		@EmprendimientoForm()
-		@EmprendimientoList(items)
+		<div class="layout-principal">
+			@EmprendimientoForm()
+			@EmprendimientoList(items)
+		</div>
 	}
 }

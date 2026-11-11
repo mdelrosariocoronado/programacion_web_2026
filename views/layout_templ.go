@@ -40,7 +40,7 @@ func Layout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - Portal de Emprendimientos</title><link rel=\"icon\" type=\"image/png\" href=\"/static/images/mapa.png\"><link rel=\"stylesheet\" type=\"text/css\" href=\"/static/style.css\"><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"></head><body><header class=\"contenedor-titulo\"><div class=\"icono\"></div><div><h1>PORTAL DE EMPRENDIMIENTOS</h1><p>Red centralizada de emprendimientos en Tandil. Para conectar clientes con productos/servicios.</p><nav><a href=\"/emprendimientos\">Emprendimientos</a> | <a href=\"/usuarios\">Usuarios</a> | <a href=\"/publicaciones\">Publicaciones</a></nav></div></header><main class=\"contenedor-contenido container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - Portal de Emprendimientos</title><link rel=\"icon\" type=\"image/png\" href=\"/static/images/mapa.png\"><!-- Estilos del Sistema de Diseño (styles.css) --><link rel=\"stylesheet\" type=\"text/css\" href=\"/static/styles.css\"></head><body><header class=\"contenedor-titulo\"><div class=\"icono\"></div><div><h1>PORTAL DE EMPRENDIMIENTOS</h1><p>Red centralizada de emprendimientos en Tandil. Para conectar clientes con productos/servicios.</p><nav class=\"\"><a href=\"/\">Inicio </a> <a href=\"/emprendimientos\">Emprendimientos</a> <a href=\"/usuarios\">Usuarios</a> <a href=\"/publicaciones\">Publicaciones</a></nav></div></header><main class=\"contenedor-contenido container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
