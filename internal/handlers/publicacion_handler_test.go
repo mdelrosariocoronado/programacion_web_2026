@@ -221,22 +221,53 @@ func TestPublicacionHandler_Delete(t *testing.T) {
 }
 
 func TestPublicacionHandler_RenderPage(t *testing.T) {
-	mockSvc := &mockPublicacionService{}
-	handler := NewPublicacionHandler(mockSvc)
+	t.Run("sin_filtro", func(t *testing.T) {
+		mockSvc := &mockPublicacionService{}
+		handler := NewPublicacionHandler(mockSvc)
 
-	req := httptest.NewRequest(http.MethodGet, "/publicaciones", nil)
-	rr := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/publicaciones", nil)
+		rr := httptest.NewRecorder()
 
-	handler.RenderPage(rr, req)
+		handler.RenderPage(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Errorf("RenderPage devolvió código %v, se esperaba %v", rr.Code, http.StatusOK)
-	}
+		if rr.Code != http.StatusOK {
+			t.Errorf("RenderPage devolvió código %v, se esperaba %v", rr.Code, http.StatusOK)
+		}
 
-	body := rr.Body.String()
-	if !strings.Contains(body, "Gestión de Publicaciones") {
-		t.Errorf("Se esperaba que la respuesta contenga 'Gestión de Publicaciones', se obtuvo: %s", body)
-	}
+		body := rr.Body.String()
+		if !strings.Contains(body, "Gestión de Publicaciones") {
+			t.Errorf("Se esperaba que la respuesta contenga 'Gestión de Publicaciones', se obtuvo: %s", body)
+		}
+	})
+
+	t.Run("con_filtro_id_emprendimiento", func(t *testing.T) {
+		var passedID int32
+		mockSvc := &mockPublicacionService{
+			listByEmprendimientoFunc: func(ctx context.Context, idEmprendimiento int32) ([]db.Publicacione, error) {
+				passedID = idEmprendimiento
+				return []db.Publicacione{
+					{IDPublicacion: 1, IDEmprendimiento: idEmprendimiento, Titulo: "Pub Filtrada", Tipo: "producto"},
+				}, nil
+			},
+		}
+		handler := NewPublicacionHandler(mockSvc)
+
+		req := httptest.NewRequest(http.MethodGet, "/publicaciones?id_emprendimiento=5", nil)
+		rr := httptest.NewRecorder()
+
+		handler.RenderPage(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Errorf("RenderPage devolvió código %v, se esperaba %v", rr.Code, http.StatusOK)
+		}
+		if passedID != 5 {
+			t.Errorf("se esperaba id_emprendimiento 5, se pasó %d", passedID)
+		}
+		body := rr.Body.String()
+		if !strings.Contains(body, "Pub Filtrada") {
+			t.Errorf("se esperaba ver 'Pub Filtrada' en el body, se obtuvo: %s", body)
+		}
+	})
 }
 
 func TestPublicacionHandler_CreateFromForm(t *testing.T) {

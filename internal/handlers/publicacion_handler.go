@@ -23,17 +23,9 @@ func NewPublicacionHandler(service services.PublicacionService) *PublicacionHand
 	}
 }
 
-// RenderPage: GET /publicaciones (SSR con Templ)
+// RenderPage: GET /publicaciones (SSR con Templ, soporta filtro ?id_emprendimiento=)
 func (h *PublicacionHandler) RenderPage(w http.ResponseWriter, r *http.Request) {
-	pubs, err := h.service.List(r.Context())
-	if err != nil {
-		http.Error(w, "Error al obtener la lista de publicaciones: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if err := views.PublicacionesPage(pubs).Render(r.Context(), w); err != nil {
-		http.Error(w, "Error al renderizar la vista: "+err.Error(), http.StatusInternalServerError)
-	}
+	h.ListarHTML(w, r)
 }
 
 // CreateFromForm: POST /publicaciones (Manejo de formulario clásico con patrón Post/Redirect/Get)
@@ -202,7 +194,6 @@ func (h *PublicacionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
 func (h *PublicacionHandler) ListarHTML(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var (
@@ -210,11 +201,14 @@ func (h *PublicacionHandler) ListarHTML(w http.ResponseWriter, r *http.Request) 
 		err           error
 	)
 
-	if param := r.URL.Query().Get("id_emprendimiento"); param != "" {
-		if id, errConv := strconv.Atoi(param); errConv == nil && id > 0 {
-			publicaciones, err = h.service.ListByEmprendimiento(ctx, int32(id))
-		}
+	param := r.URL.Query().Get("id_emprendimiento")
+	id, errConv := strconv.Atoi(param)
+
+	// Si viene el parámetro en la URL y es un número mayor a 0, filtra
+	if param != "" && errConv == nil && id > 0 {
+		publicaciones, err = h.service.ListByEmprendimiento(ctx, int32(id))
 	} else {
+		// De lo contrario, trae todas las publicaciones
 		publicaciones, err = h.service.List(ctx)
 	}
 

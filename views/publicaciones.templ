@@ -50,9 +50,9 @@ templ PublicacionForm() {
 	</section>
 }
 
-// PublicacionList recibe el slice tipado de publicaciones y genera una tabla HTML con los datos
-// o una fila indicando que no hay publicaciones registradas.
-templ PublicacionList(publicaciones []sqlc.Publicacione) {
+// PublicacionList recibe el slice tipado de publicaciones y renderiza la tabla con los datos
+// controlando los campos sql.NullString (Precio, Contenido) y el caso de lista vacía.
+templ PublicacionList(pubs []sqlc.Publicacione) {
 	<section style="width: 100%;">
 		<article>
 			<h3>Listado de Publicaciones</h3>
@@ -61,35 +61,35 @@ templ PublicacionList(publicaciones []sqlc.Publicacione) {
 					<thead>
 						<tr>
 							<th scope="col">ID</th>
-							<th scope="col">ID Emprendimiento</th>
 							<th scope="col">Título</th>
 							<th scope="col">Tipo</th>
-							<th scope="col">Precio</th>
+							<th scope="col">ID Emprendimiento</th>
 							<th scope="col">Contenido</th>
+							<th scope="col">Precio</th>
 						</tr>
 					</thead>
 					<tbody>
-						if len(publicaciones) == 0 {
+						if len(pubs) == 0 {
 							<tr>
 								<td colspan="6" style="text-align: center;">No hay publicaciones registradas</td>
 							</tr>
 						} else {
-							for _, p := range publicaciones {
+							for _, p := range pubs {
 								<tr>
 									<td>{ fmt.Sprint(p.IDPublicacion) }</td>
-									<td>{ fmt.Sprint(p.IDEmprendimiento) }</td>
 									<td><strong>{ p.Titulo }</strong></td>
 									<td>{ p.Tipo }</td>
+									<td>{ fmt.Sprint(p.IDEmprendimiento) }</td>
 									<td>
-										if p.Precio.Valid && p.Precio.String != "" {
-											<span>${ p.Precio.String }</span>
+										if p.Contenido.Valid && p.Contenido.String != "" {
+											{ p.Contenido.String }
 										} else {
 											<span>-</span>
 										}
 									</td>
 									<td>
-										if p.Contenido.Valid && p.Contenido.String != "" {
-											{ p.Contenido.String }
+										if p.Precio.Valid && p.Precio.String != "" {
+											<span>${ p.Precio.String }</span>
 										} else {
 											<span>-</span>
 										}
@@ -105,10 +105,10 @@ templ PublicacionList(publicaciones []sqlc.Publicacione) {
 }
 
 // PublicacionesPage compone Layout, PublicacionForm y PublicacionList.
-templ PublicacionesPage(publicaciones []sqlc.Publicacione) {
+templ PublicacionesPage(pubs []sqlc.Publicacione) {
 	@Layout("Publicaciones") {
 		<h2>Gestión de Publicaciones</h2>
 		@PublicacionForm()
-		@PublicacionList(publicaciones)
+		@PublicacionList(pubs)
 	}
 }
