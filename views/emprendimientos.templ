@@ -9,7 +9,10 @@ import (
 templ EmprendimientoForm() {
 	<section class="bloque-formulario">
 		<article>
-			<h3>Nuevo Emprendimiento</h3>
+			<div class="contenedor-h3">
+				<h3>Nuevo Emprendimiento</h3>
+			</div>
+			
 			<form method="POST" action="/emprendimientos">
 				<div class="grid">
 					<label>
@@ -71,21 +74,21 @@ templ EmprendimientoList(items []services.EmprendimientoResponse) {
 								<tr>
 									<td>{ fmt.Sprint(emp.IDEmprendimiento) }</td>
 									<td><strong>{ emp.Nombre }</strong></td>
-									<td><span class="badge badge-rubro">{ emp.Rubro }</span></td>
+									<td><a class="badge badge-rubro">{ emp.Rubro }</a></td>
 									<td>{ emp.Descripcion }</td>
 									<td>{ emp.Contacto }</td>
 									<td>
 										if emp.Url != "" {
 											<a href={ templ.SafeURL(emp.Url) } target="_blank" class="badge badge-destacado" style="text-decoration:none;">Visitar</a>
 										} else {
-											<span>-</span>
+											<a>-</a>
 										}
 									</td>
 									<td>
 										if emp.Activo {
-											<span class="badge badge-activo">Sí</span>
+											<a class="badge badge-activo">Sí</a>
 										} else {
-											<span class="badge badge-inactivo">No</span>
+											<a class="badge badge-inactivo">No</a>
 										}
 									</td>
 								</tr>

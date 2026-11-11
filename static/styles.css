@@ -33,7 +33,7 @@
     --color-featured-blue: #5b98c4;   
 
     /* Base en plantillas / Fondo cabecera */
-    --color-base-beige: #fce5c8;        
+    --color-base-beige: #fdf0dc;        
 
     /* Fondo suave paneles */
     --color-panel-bg: #eae9ed;          
@@ -55,7 +55,7 @@
 body {
     font-family: var(--font-body);
     font-size: medium;
-    background-color: var(--color-bg-page);
+    background-color: var(--color-base-beige);
     color: var(--color-text-body);
     padding-bottom: 50px;
     line-height: 1.5;
@@ -71,7 +71,7 @@ h1, h2, h3, h4, h5, h6 {
 .contenedor-titulo {
     display: flex;
     align-items: center;
-    background-color: var(--color-base-beige);
+    background-color: white;
     border-bottom: 4px solid var(--color-mint-green);
     padding: 24px 36px;
     margin-bottom: 30px;
@@ -83,11 +83,17 @@ h1, h2, h3, h4, h5, h6 {
     background-size:cover;
     background-position: center;
     background-repeat: no-repeat;
-    width: 120px;
-    height: 120px;
-    border-radius: 100%;
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
 }
 
+
+figure {
+    margin: 0; 
+    width: 100%;
+    overflow-x: auto; 
+}
 .contenedor-titulo h1 {
     font-size: 1.8rem;
     font-weight: 800;
@@ -159,14 +165,74 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
 }
 
-form .grid, .form-grid {
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 800px; 
+    width: 100%;
+}
+
+.grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem; 
+}
+
+form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; 
+    font-weight: 500;
+}
+
+
+form input, form select{
+    width: 100%; 
+    padding: 0.5rem 0;
+    border: none;
+    border-bottom: 2px solid var(--color-mint-green);
+    font-size: 1rem;
+    font-family: var(--font-body); 
+    box-sizing: border-box; 
+    transition: border-color 0.3s ease;
+}
+
+form input:focus, 
+form select:focus {
+    outline: none;
+    border-bottom-color: var(--color-featured-blue); 
+}
+
+form input::placeholder {
+    color: gray;
+    font-weight: 400;
+}
+
+form .btn-principal {
+    align-self: center; 
+    margin-top: 0.5rem;
+    
+}
+
+form select option {
+    background-color: var(--color-card-bg); 
+    color: var(--color-text-body); 
+    font-family: var(--font-body); 
+}
+
+
+form select option:checked,
+form select option:hover {
+    background-color: gray;
+    color: white;
 }
 
 article {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
     border-radius: 12px;
@@ -176,8 +242,19 @@ article {
 
 article h3 {
     font-size: 1.3rem;
+    background-color: var(--color-mint-green);
+    padding: 10px 24px;
+    border-radius: 30px;
     margin-bottom: 1rem;
     color: var(--color-dark-teal);
+}
+
+
+.contenedor-h3{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
 }
 
 
@@ -185,8 +262,8 @@ button, input[type="submit"], button[type="submit"], .btn-principal {
     background-color: var(--color-dark-teal);
     border: 1px solid var(--color-dark-teal);
     color: #ffffff;
-    font-weight: 600;
-    font-family: var(--font-body);
+    font-family: var(--font-highlight);
+    font-size: 1rem;
     border-radius: 30px;
     padding: 10px 24px;
     cursor: pointer;
@@ -215,63 +292,13 @@ button:hover, input[type="submit"]:hover, button[type="submit"]:hover, .btn-prin
     border-color: var(--color-mint-green-hover);
 }
 
-.badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    line-height: 1.2;
-    text-align: center;
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-    text-transform: capitalize;
-}
 
 
-.badge-verde, .badge-producto, .badge-cliente, .badge-activo {
-    background-color: var(--color-mint-green);
-    color: var(--color-dark-teal);
-    border: 1px solid rgba(28, 78, 91, 0.15);
-}
 
 
-.badge-destacado, .badge-promocion, .badge-emprendedor, .badge-precio {
-    background-color: var(--color-featured-blue);
-    color: #ffffff;
-    font-weight: 700;
-}
 
 
-.badge-beige, .badge-servicio, .badge-rubro {
-    background-color: var(--color-base-beige);
-    color: var(--color-dark-teal);
-    border: 1px solid rgba(28, 78, 91, 0.15);
-}
 
-
-.badge-dark, .badge-administrador {
-    background-color: var(--color-dark-teal);
-    color: #ffffff;
-}
-
-
-.badge-neutral, .badge-otro, .badge-inactivo {
-    background-color: var(--color-panel-bg);
-    color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
-}
-
-
-input, select, textarea {
-    border-radius: 8px !important;
-    border: 1px solid var(--color-border) !important;
-    font-family: var(--font-body) !important;
-}
-
-input:focus, select:focus, textarea:focus {
-    border-color: var(--color-featured-blue) !important;
-}
 
 table {
     border-collapse: separate;
@@ -345,4 +372,29 @@ tbody tr:hover {
 .entidad li {
     margin-bottom: 4px;
     font-size: 0.92rem;
+}
+
+.bloque-listado article {
+    text-align: center; 
+    padding: 1.5rem; 
+    border-radius: 10px; 
+    transition: background-color 0.3s ease; 
+}
+
+
+
+@media (max-width: 768px) {
+    .icono {
+        width: 70px;
+        height: 70px;
+        margin-right: 16px; 
+    }
+}
+
+@media (max-width: 480px) {
+    .icono {
+        width: 50px;
+        height: 50px;
+        margin-right: 12px;
+    }
 }
