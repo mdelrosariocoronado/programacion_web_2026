@@ -70,6 +70,9 @@ func main() {
 	pubService := services.NewPublicacionService(pubRepo)
 	pubHandler := handlers.NewPublicacionHandler(pubService)
 
+	// HOME
+	homeHandler := handlers.NewHomeHandler()
+
 	//-- manejo del enrutamiento (mux es para el mapeo de rutas especificas para la capa de presentacion)
 
 	router := http.NewServeMux()
@@ -80,8 +83,10 @@ func main() {
 	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
 	// Vistas SSR con Templ (TP5)
+	// 0. Inicio
+	router.HandleFunc("GET /{$}", homeHandler.RenderPage)
+
 	// 1. Emprendimientos
-	router.HandleFunc("GET /{$}", empHandler.RenderPage)
 	router.HandleFunc("GET /emprendimientos", empHandler.RenderPage)
 	router.HandleFunc("POST /emprendimientos", empHandler.CreateFromForm)
 
