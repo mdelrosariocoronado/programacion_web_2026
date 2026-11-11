@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"emprendimientos.com/servidor-go/db/sqlc"
 	"emprendimientos.com/servidor-go/internal/services"
 	"emprendimientos.com/servidor-go/views"
 )
@@ -200,4 +201,29 @@ func (h *PublicacionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *PublicacionHandler) ListarHTML(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var (
+		publicaciones []sqlc.Publicacione
+		err           error
+	)
+
+	if param := r.URL.Query().Get("id_emprendimiento"); param != "" {
+		if id, errConv := strconv.Atoi(param); errConv == nil && id > 0 {
+			publicaciones, err = h.service.ListByEmprendimiento(ctx, int32(id))
+		}
+	} else {
+		publicaciones, err = h.service.List(ctx)
+	}
+
+	if err != nil {
+		http.Error(w, "Error al cargar publicaciones: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := views.PublicacionesPage(publicaciones).Render(ctx, w); err != nil {
+		http.Error(w, "Error al renderizar: "+err.Error(), http.StatusInternalServerError)
+	}
 }

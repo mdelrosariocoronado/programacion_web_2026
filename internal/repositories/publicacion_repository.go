@@ -14,6 +14,7 @@ type PublicacionRepo interface {
 	ListByEmprendimiento(ctx context.Context, idEmprendimiento int32) ([]db.Publicacione, error)
 	Update(ctx context.Context, params db.UpdatePublicacionParams) error
 	Delete(ctx context.Context, id int32) error
+	
 }
 
 // publicacionRepository implementa PublicacionRepo interactuando con sqlc

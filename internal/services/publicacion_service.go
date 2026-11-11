@@ -236,3 +236,10 @@ func (s *publicacionService) Delete(ctx context.Context, id int32) error {
 
 	return nil
 }
+
+func (s *publicacionService) Listar(ctx context.Context, idEmprendimiento int32) ([]db.Publicacione, error) {
+	if idEmprendimiento > 0 {
+		return s.repo.ListByEmprendimiento(ctx, idEmprendimiento)
+	}
+return s.repo.List(ctx)
+}
