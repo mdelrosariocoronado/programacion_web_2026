@@ -21,13 +21,13 @@ DB_URL := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?
 
 generate:
 	@printf "$(CYAN)___________________ Generando codigo con SQLC y Templ ___________________$(RESET)\n"
-	sqlc generate
-	go run github.com/a-h/templ/cmd/templ@latest generate
+	@if command -v sqlc >/dev/null 2>&1; then sqlc generate; else echo "sqlc CLI no encontrado en PATH, usando código ya generado en db/sqlc/"; fi
+	@if command -v templ >/dev/null 2>&1; then templ generate; else go run github.com/a-h/templ/cmd/templ generate; fi
 
 test:
 	@printf "$(CYAN)___________________ Generando codigo con SQLC y Templ ___________________$(RESET)\n"
-	sqlc generate
-	go run github.com/a-h/templ/cmd/templ@latest generate
+	@if command -v sqlc >/dev/null 2>&1; then sqlc generate; else echo "sqlc CLI no encontrado en PATH, usando código ya generado en db/sqlc/"; fi
+	@if command -v templ >/dev/null 2>&1; then templ generate; else go run github.com/a-h/templ/cmd/templ generate; fi
 	@printf " "
 	
 	@printf "$(YELLOW)___________________ Limpiando contenedores y volumenes previos ___________________$(RESET)\n"
@@ -66,7 +66,7 @@ test:
 
 run:
 	@printf "$(CYAN)Generando vistas con Templ...$(RESET)\n"
-	go run github.com/a-h/templ/cmd/templ@latest generate
+	@if command -v templ >/dev/null 2>&1; then templ generate; else go run github.com/a-h/templ/cmd/templ generate; fi
 	@printf "$(GREEN)Levantando base de datos...$(RESET)\n"
 	docker compose up -d db
 	@until docker compose exec -T db pg_isready -U $(DB_USER) -d $(DB_NAME) > /dev/null 2>&1; do \
@@ -78,8 +78,8 @@ run:
 
 run-app:
 	@printf "$(CYAN)___________________ 1. Tareas previas: SQLC y Templ ___________________$(RESET)\n"
-	sqlc generate
-	go run github.com/a-h/templ/cmd/templ@latest generate
+	@if command -v sqlc >/dev/null 2>&1; then sqlc generate; else echo "sqlc CLI no encontrado en PATH, usando código ya generado en db/sqlc/"; fi
+	@if command -v templ >/dev/null 2>&1; then templ generate; else go run github.com/a-h/templ/cmd/templ generate; fi
 	@printf "$(CYAN)___________________ Compilando aplicacion Go ___________________$(RESET)\n"
 	go build -o bin/server ./cmd/server
 	@printf "$(YELLOW)___________________ Limpiando contenedores y volumenes previos ___________________$(RESET)\n"
