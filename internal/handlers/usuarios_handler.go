@@ -121,7 +121,15 @@ func (h *UserHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/usuarios", http.StatusSeeOther)
+	// HTMX: en lugar de redirigir, consultar la lista actualizada y devolver solo el fragmento de lista
+	usuarios, err := h.service.ListarUsuarios(r.Context())
+	if err != nil {
+		http.Error(w, "Error al obtener la lista actualizada: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := views.UsuarioList(usuarios).Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al renderizar la lista: "+err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {

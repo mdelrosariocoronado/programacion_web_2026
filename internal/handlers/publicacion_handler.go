@@ -72,7 +72,15 @@ func (h *PublicacionHandler) CreateFromForm(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	http.Redirect(w, r, "/publicaciones", http.StatusSeeOther)
+	// HTMX: en lugar de redirigir, consultar la lista actualizada y devolver solo el fragmento de lista
+	publicaciones, err := h.service.List(r.Context())
+	if err != nil {
+		http.Error(w, "Error al obtener la lista actualizada: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := views.PublicacionList(publicaciones).Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al renderizar la lista: "+err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // Create: POST /api/publicaciones (201 Created)
