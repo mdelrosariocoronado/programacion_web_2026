@@ -10,7 +10,10 @@ templ PublicacionForm() {
 	<section class="bloque-formulario">
 		<article>
 			<h3>Nueva Publicación</h3>
-			<form method="POST" action="/publicaciones">
+			<form
+				hx-post="/publicaciones"
+				hx-target="#lista-publicaciones"
+				hx-swap="outerHTML">
 				<div class="grid">
 					<label>
 						ID Emprendimiento *
@@ -53,7 +56,7 @@ templ PublicacionForm() {
 // PublicacionList recibe el slice tipado de publicaciones y renderiza la tabla con los datos
 // controlando los campos sql.NullString (Precio, Contenido) y el caso de lista vacía.
 templ PublicacionList(pubs []sqlc.Publicacione) {
-	<section class="bloque-listado">
+	<section id="lista-publicaciones" class="bloque-listado">
 		<article>
 			<h3>Listado de Publicaciones</h3>
 			<figure>

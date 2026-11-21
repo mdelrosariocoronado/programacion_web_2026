@@ -13,7 +13,10 @@ templ EmprendimientoForm() {
 				<h3>Nuevo Emprendimiento</h3>
 			</div>
 			
-			<form method="POST" action="/emprendimientos">
+			<form
+				hx-post="/emprendimientos"
+				hx-target="#lista-emprendimientos"
+				hx-swap="outerHTML">
 				<div class="grid">
 					<label>
 						Nombre *
@@ -50,7 +53,7 @@ templ EmprendimientoForm() {
 
 // EmprendimientoList recibe el slice tipado de emprendimientos y renderiza la tabla o un mensaje si está vacía.
 templ EmprendimientoList(items []services.EmprendimientoResponse) {
-	<section class="bloque-listado">
+	<section id="lista-emprendimientos" class="bloque-listado">
 		<article>
 			<h3>Listado de Emprendimientos</h3>
 			if len(items) == 0 {

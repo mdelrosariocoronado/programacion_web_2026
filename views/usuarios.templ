@@ -10,7 +10,10 @@ templ UsuarioForm() {
 	<section class="bloque-formulario">
 		<article>
 			<h3>Nuevo Usuario</h3>
-			<form method="POST" action="/usuarios">
+			<form
+				hx-post="/usuarios"
+				hx-target="#lista-usuarios"
+				hx-swap="outerHTML">
 				<div class="grid">
 					<label>
 						Nombre Completo *
@@ -48,7 +51,7 @@ templ UsuarioForm() {
 // UsuarioList recibe el slice tipado de usuarios y genera una tabla HTML con los datos del usuario
 // o una fila indicando "No hay usuarios registrados" si el slice está vacío.
 templ UsuarioList(usuarios []sqlc.Usuario) {
-	<section class="bloque-listado">
+	<section id="lista-usuarios" class="bloque-listado">
 		<article>
 			<h3>Listado de Usuarios</h3>
 			<figure>
