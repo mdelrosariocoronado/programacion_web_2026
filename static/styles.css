@@ -292,6 +292,23 @@ button:hover, input[type="submit"]:hover, button[type="submit"]:hover, .btn-prin
     border-color: var(--color-mint-green-hover);
 }
 
+.btn-eliminar {
+    background-color: #c94a4a;
+    border: 1px solid #c94a4a;
+    color: #ffffff;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-eliminar:hover {
+    background-color: #a63737;
+    border-color: #a63737;
+    transform: translateY(-1px);
+}
+
 
 
 

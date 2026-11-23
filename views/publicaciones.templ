@@ -5,52 +5,64 @@ import (
 	"emprendimientos.com/servidor-go/db/sqlc"
 )
 
-// PublicacionForm renderiza el formulario clásico (POST /publicaciones) para crear una publicación.
+// PublicacionForm renderiza el formulario con HTMX (hx-post="/publicaciones") para crear sin recargar la página.
 templ PublicacionForm() {
-	<section class="bloque-formulario">
-		<article>
-			<h3>Nueva Publicación</h3>
-			<form
-				hx-post="/publicaciones"
-				hx-target="#lista-publicaciones"
-				hx-swap="outerHTML">
-				<div class="grid">
-					<label>
-						ID Emprendimiento *
-						<input type="number" name="id_emprendimiento" placeholder="Ej: 1" min="1" required/>
-					</label>
-					<label>
-						Título *
-						<input type="text" name="titulo" placeholder="Ej: Promo 2x1 en Cafés" required/>
-					</label>
-				</div>
-				<div class="grid">
-					<label>
-						Tipo *
-						<select name="tipo" required>
-							<option value="producto">Producto</option>
-							<option value="promocion">Promoción</option>
-							<option value="servicio">Servicio</option>
-							<option value="otro">Otro</option>
-						</select>
-					</label>
-					<label>
-						Precio (opcional)
-						<input type="number" step="0.01" min="0" name="precio" placeholder="Ej: 1500.00"/>
-					</label>
-				</div>
-				<label>
-					Contenido
-					<input type="text" name="contenido" placeholder="Detalle de la publicación..."/>
-				</label>
-				<label>
-					URL de Imagen
-					<input type="url" name="imagen_url" placeholder="https://ejemplo.com/imagen.jpg"/>
-				</label>
-				<button type="submit" class="btn-principal">Crear Publicación</button>
-			</form>
-		</article>
+	<section id="form-publicaciones" class="bloque-formulario">
+		@publicacionFormBody()
 	</section>
+}
+
+// PublicacionFormOOB renderiza un formulario vacío con Out-of-Band Swap para limpiar los inputs tras crear.
+templ PublicacionFormOOB() {
+	<section id="form-publicaciones" class="bloque-formulario" hx-swap-oob="true">
+		@publicacionFormBody()
+	</section>
+}
+
+templ publicacionFormBody() {
+	<article>
+		<h3>Nueva Publicación</h3>
+		<form
+			hx-post="/publicaciones"
+			hx-target="#lista-publicaciones"
+			hx-swap="outerHTML"
+		>
+			<div class="grid">
+				<label>
+					ID Emprendimiento *
+					<input type="number" name="id_emprendimiento" placeholder="Ej: 1" min="1" required/>
+				</label>
+				<label>
+					Título *
+					<input type="text" name="titulo" placeholder="Ej: Promo 2x1 en Cafés" required/>
+				</label>
+			</div>
+			<div class="grid">
+				<label>
+					Tipo *
+					<select name="tipo" required>
+						<option value="producto">Producto</option>
+						<option value="promocion">Promoción</option>
+						<option value="servicio">Servicio</option>
+						<option value="otro">Otro</option>
+					</select>
+				</label>
+				<label>
+					Precio (opcional)
+					<input type="number" step="0.01" min="0" name="precio" placeholder="Ej: 1500.00"/>
+				</label>
+			</div>
+			<label>
+				Contenido
+				<input type="text" name="contenido" placeholder="Detalle de la publicación..."/>
+			</label>
+			<label>
+				URL de Imagen
+				<input type="url" name="imagen_url" placeholder="https://ejemplo.com/imagen.jpg"/>
+			</label>
+			<button type="submit" class="btn-principal">Crear Publicación</button>
+		</form>
+	</article>
 }
 
 // PublicacionList recibe el slice tipado de publicaciones y renderiza la tabla con los datos
@@ -69,12 +81,13 @@ templ PublicacionList(pubs []sqlc.Publicacione) {
 							<th scope="col">ID Emprendimiento</th>
 							<th scope="col">Contenido</th>
 							<th scope="col">Precio</th>
+							<th scope="col">Acciones</th>
 						</tr>
 					</thead>
 					<tbody>
 						if len(pubs) == 0 {
 							<tr>
-								<td colspan="6" style="text-align: center;">No hay publicaciones registradas</td>
+								<td colspan="7" style="text-align: center;">No hay publicaciones registradas</td>
 							</tr>
 						} else {
 							for _, p := range pubs {
@@ -107,6 +120,16 @@ templ PublicacionList(pubs []sqlc.Publicacione) {
 										} else {
 											<span>-</span>
 										}
+									</td>
+									<td>
+										<button
+											type="button"
+											class="btn-eliminar"
+											hx-delete={ fmt.Sprintf("/publicaciones/%d", p.IDPublicacion) }
+											hx-target="closest tr"
+											hx-swap="outerHTML"
+											hx-confirm="¿Estás seguro de que querés eliminar esta publicación?"
+										>Borrar</button>
 									</td>
 								</tr>
 							}

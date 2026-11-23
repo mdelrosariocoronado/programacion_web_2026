@@ -5,50 +5,61 @@ import (
 	"emprendimientos.com/servidor-go/internal/services"
 )
 
-// EmprendimientoForm renderiza el formulario clásico (POST /emprendimientos) para dar de alta un emprendimiento.
+// EmprendimientoForm renderiza el formulario con HTMX (hx-post="/emprendimientos") para dar de alta sin recargar la página.
 templ EmprendimientoForm() {
-	<section class="bloque-formulario">
-		<article>
-			<div class="contenedor-h3">
-				<h3>Nuevo Emprendimiento</h3>
-			</div>
-			
-			<form
-				hx-post="/emprendimientos"
-				hx-target="#lista-emprendimientos"
-				hx-swap="outerHTML">
-				<div class="grid">
-					<label>
-						Nombre *
-						<input type="text" name="nombre" placeholder="Ej: Cafetería Las Orquídeas" required/>
-					</label>
-					<label>
-						Rubro *
-						<input type="text" name="rubro" placeholder="Ej: Gastronomía" required/>
-					</label>
-				</div>
-				<label>
-					Descripción
-					<input type="text" name="descripcion" placeholder="Breve descripción del emprendimiento"/>
-				</label>
-				<div class="grid">
-					<label>
-						Contacto
-						<input type="text" name="contacto" placeholder="Teléfono, Instagram o email"/>
-					</label>
-					<label>
-						Sitio Web (URL)
-						<input type="url" name="url" placeholder="https://ejemplo.com"/>
-					</label>
-					<label>
-						Logo (URL de imagen)
-						<input type="text" name="logo" placeholder="https://ejemplo.com/logo.png"/>
-					</label>
-				</div>
-				<button type="submit" class="btn-principal">Crear Emprendimiento</button>
-			</form>
-		</article>
+	<section id="form-emprendimientos" class="bloque-formulario">
+		@emprendimientoFormBody()
 	</section>
+}
+
+// EmprendimientoFormOOB renderiza un formulario vacío con Out-of-Band Swap para limpiar los inputs tras crear.
+templ EmprendimientoFormOOB() {
+	<section id="form-emprendimientos" class="bloque-formulario" hx-swap-oob="true">
+		@emprendimientoFormBody()
+	</section>
+}
+
+templ emprendimientoFormBody() {
+	<article>
+		<div class="contenedor-h3">
+			<h3>Nuevo Emprendimiento</h3>
+		</div>
+		<form
+			hx-post="/emprendimientos"
+			hx-target="#lista-emprendimientos"
+			hx-swap="outerHTML"
+		>
+			<div class="grid">
+				<label>
+					Nombre *
+					<input type="text" name="nombre" placeholder="Ej: Cafetería Las Orquídeas" required/>
+				</label>
+				<label>
+					Rubro *
+					<input type="text" name="rubro" placeholder="Ej: Gastronomía" required/>
+				</label>
+			</div>
+			<label>
+				Descripción
+				<input type="text" name="descripcion" placeholder="Breve descripción del emprendimiento"/>
+			</label>
+			<div class="grid">
+				<label>
+					Contacto
+					<input type="text" name="contacto" placeholder="Teléfono, Instagram o email"/>
+				</label>
+				<label>
+					Sitio Web (URL)
+					<input type="url" name="url" placeholder="https://ejemplo.com"/>
+				</label>
+				<label>
+					Logo (URL de imagen)
+					<input type="text" name="logo" placeholder="https://ejemplo.com/logo.png"/>
+				</label>
+			</div>
+			<button type="submit" class="btn-principal">Crear Emprendimiento</button>
+		</form>
+	</article>
 }
 
 // EmprendimientoList recibe el slice tipado de emprendimientos y renderiza la tabla o un mensaje si está vacía.
@@ -70,6 +81,7 @@ templ EmprendimientoList(items []services.EmprendimientoResponse) {
 								<th scope="col">Contacto</th>
 								<th scope="col">Web</th>
 								<th scope="col">Activo</th>
+								<th scope="col">Acciones</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -93,6 +105,16 @@ templ EmprendimientoList(items []services.EmprendimientoResponse) {
 										} else {
 											<a class="badge badge-inactivo">No</a>
 										}
+									</td>
+									<td>
+										<button
+											type="button"
+											class="btn-eliminar"
+											hx-delete={ fmt.Sprintf("/emprendimientos/%d", emp.IDEmprendimiento) }
+											hx-target="closest tr"
+											hx-swap="outerHTML"
+											hx-confirm="¿Estás seguro de que querés eliminar este emprendimiento?"
+										>Borrar</button>
 									</td>
 								</tr>
 							}

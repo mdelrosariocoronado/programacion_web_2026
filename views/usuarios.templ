@@ -5,47 +5,59 @@ import (
 	"emprendimientos.com/servidor-go/db/sqlc"
 )
 
-// UsuarioForm renderiza el formulario (POST /usuarios) para dar de alta un nuevo usuario.
+// UsuarioForm renderiza el formulario con HTMX (hx-post="/usuarios") para dar de alta sin recargar la página.
 templ UsuarioForm() {
-	<section class="bloque-formulario">
-		<article>
-			<h3>Nuevo Usuario</h3>
-			<form
-				hx-post="/usuarios"
-				hx-target="#lista-usuarios"
-				hx-swap="outerHTML">
-				<div class="grid">
-					<label>
-						Nombre Completo *
-						<input type="text" name="nombre_completo" placeholder="Ej: Juan Pérez" required/>
-					</label>
-					<label>
-						Email *
-						<input type="email" name="email" placeholder="juan@ejemplo.com" required/>
-					</label>
-				</div>
-				<div class="grid">
-					<label>
-						Contraseña *
-						<input type="password" name="clave" placeholder="Contraseña segura" required/>
-					</label>
-					<label>
-						Rol *
-						<select name="rol" required>
-							<option value="cliente">Cliente</option>
-							<option value="emprendedor">Emprendedor</option>
-							<option value="administrador">Administrador</option>
-						</select>
-					</label>
-					<label>
-						ID Emprendimiento
-						<input type="number" name="id_emprendimiento" placeholder="Opcional (Ej: 1)" min="1"/>
-					</label>
-				</div>
-				<button type="submit" class="btn-principal">Crear Usuario</button>
-			</form>
-		</article>
+	<section id="form-usuarios" class="bloque-formulario">
+		@usuarioFormBody()
 	</section>
+}
+
+// UsuarioFormOOB renderiza un formulario vacío con Out-of-Band Swap para limpiar los inputs tras crear.
+templ UsuarioFormOOB() {
+	<section id="form-usuarios" class="bloque-formulario" hx-swap-oob="true">
+		@usuarioFormBody()
+	</section>
+}
+
+templ usuarioFormBody() {
+	<article>
+		<h3>Nuevo Usuario</h3>
+		<form
+			hx-post="/usuarios"
+			hx-target="#lista-usuarios"
+			hx-swap="outerHTML"
+		>
+			<div class="grid">
+				<label>
+					Nombre Completo *
+					<input type="text" name="nombre_completo" placeholder="Ej: Juan Pérez" required/>
+				</label>
+				<label>
+					Email *
+					<input type="email" name="email" placeholder="juan@ejemplo.com" required/>
+				</label>
+			</div>
+			<div class="grid">
+				<label>
+					Contraseña *
+					<input type="password" name="clave" placeholder="Contraseña segura" required/>
+				</label>
+				<label>
+					Rol *
+					<select name="rol" required>
+						<option value="cliente">Cliente</option>
+						<option value="emprendedor">Emprendedor</option>
+						<option value="administrador">Administrador</option>
+					</select>
+				</label>
+				<label>
+					ID Emprendimiento
+					<input type="number" name="id_emprendimiento" placeholder="Opcional (Ej: 1)" min="1"/>
+				</label>
+			</div>
+			<button type="submit" class="btn-principal">Crear Usuario</button>
+		</form>
+	</article>
 }
 
 // UsuarioList recibe el slice tipado de usuarios y genera una tabla HTML con los datos del usuario
@@ -63,12 +75,13 @@ templ UsuarioList(usuarios []sqlc.Usuario) {
 							<th scope="col">Email</th>
 							<th scope="col">Rol</th>
 							<th scope="col">ID Emprendimiento</th>
+							<th scope="col">Acciones</th>
 						</tr>
 					</thead>
 					<tbody>
 						if len(usuarios) == 0 {
 							<tr>
-								<td colspan="5" style="text-align: center;">No hay usuarios registrados</td>
+								<td colspan="6" style="text-align: center;">No hay usuarios registrados</td>
 							</tr>
 						} else {
 							for _, u := range usuarios {
@@ -94,6 +107,16 @@ templ UsuarioList(usuarios []sqlc.Usuario) {
 										} else {
 											<span>-</span>
 										}
+									</td>
+									<td>
+										<button
+											type="button"
+											class="btn-eliminar"
+											hx-delete={ fmt.Sprintf("/usuarios/%d", u.IDUsuario) }
+											hx-target="closest tr"
+											hx-swap="outerHTML"
+											hx-confirm="¿Estás seguro de que querés eliminar este usuario?"
+										>Borrar</button>
 									</td>
 								</tr>
 							}
