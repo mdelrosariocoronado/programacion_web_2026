@@ -58,7 +58,7 @@ func (h *EmprendimientoHandler) CreateFromForm(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// HTMX: en lugar de redirigir, consultar la lista actualizada y devolver solo el fragmento de lista
+	// HTMX: devolver la lista actualizada y un segundo fragmento OOB para limpiar el formulario
 	lista, err := h.service.List(r.Context())
 	if err != nil {
 		http.Error(w, "Error al obtener la lista actualizada: "+err.Error(), http.StatusInternalServerError)
@@ -66,7 +66,32 @@ func (h *EmprendimientoHandler) CreateFromForm(w http.ResponseWriter, r *http.Re
 	}
 	if err := views.EmprendimientoList(lista).Render(r.Context(), w); err != nil {
 		http.Error(w, "Error al renderizar la lista: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
+	if err := views.EmprendimientoFormOOB().Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al renderizar el formulario limpio: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// DeleteFromHTMX: DELETE /emprendimientos/{id} (Borrado reactivo sin recarga de página)
+func (h *EmprendimientoHandler) DeleteFromHTMX(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.Error(w, "El parámetro 'id' debe ser un número entero positivo", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.Delete(r.Context(), id); err != nil {
+		if errors.Is(err, services.ErrNotFound) {
+			http.Error(w, "Emprendimiento no encontrado", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Error al eliminar el emprendimiento: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// HTMX: 200 OK con cuerpo vacío reemplaza el target (closest tr) por nada, eliminando la fila del DOM
+	w.WriteHeader(http.StatusOK)
 }
 
 // Create: POST /api/emprendimientos

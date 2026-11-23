@@ -121,7 +121,7 @@ func (h *UserHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// HTMX: en lugar de redirigir, consultar la lista actualizada y devolver solo el fragmento de lista
+	// HTMX: devolver la lista actualizada y un segundo fragmento OOB para limpiar el formulario
 	usuarios, err := h.service.ListarUsuarios(r.Context())
 	if err != nil {
 		http.Error(w, "Error al obtener la lista actualizada: "+err.Error(), http.StatusInternalServerError)
@@ -129,7 +129,33 @@ func (h *UserHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := views.UsuarioList(usuarios).Render(r.Context(), w); err != nil {
 		http.Error(w, "Error al renderizar la lista: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
+	if err := views.UsuarioFormOOB().Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al renderizar el formulario limpio: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// DeleteFromHTMX: DELETE /usuarios/{id} (Borrado reactivo sin recarga de página)
+func (h *UserHandler) DeleteFromHTMX(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil || id <= 0 {
+		http.Error(w, "Identificador de usuario inválido", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.EliminarUsuario(r.Context(), int32(id)); err != nil {
+		if errors.Is(err, services.ErrUsuarioNoEncontrado) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Error al eliminar el usuario", http.StatusInternalServerError)
+		return
+	}
+
+	// HTMX: 200 OK con cuerpo vacío reemplaza el target (closest tr) por nada, eliminando la fila del DOM
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {

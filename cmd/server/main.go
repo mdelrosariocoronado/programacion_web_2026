@@ -82,21 +82,24 @@ func main() {
 	fileServer := http.FileServer(http.Dir("./static"))
 	router.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
-	// Vistas SSR con Templ (TP5)
+	// Vistas SSR + HTMX con Templ (TP5 / TP6)
 	// 0. Inicio
 	router.HandleFunc("GET /{$}", homeHandler.RenderPage)
 
 	// 1. Emprendimientos
 	router.HandleFunc("GET /emprendimientos", empHandler.RenderPage)
 	router.HandleFunc("POST /emprendimientos", empHandler.CreateFromForm)
+	router.HandleFunc("DELETE /emprendimientos/{id}", empHandler.DeleteFromHTMX)
 
 	// 2. Usuarios
 	router.HandleFunc("GET /usuarios", usuarioHandler.RenderPage)
 	router.HandleFunc("POST /usuarios", usuarioHandler.CreateFromForm)
+	router.HandleFunc("DELETE /usuarios/{id}", usuarioHandler.DeleteFromHTMX)
 
 	// 3. Publicaciones
 	router.HandleFunc("GET /publicaciones", pubHandler.RenderPage)
 	router.HandleFunc("POST /publicaciones", pubHandler.CreateFromForm)
+	router.HandleFunc("DELETE /publicaciones/{id}", pubHandler.DeleteFromHTMX)
 
 	// endpoint de compatibilidad
 	router.HandleFunc("/users", usuarioHandler.HandleUsers)
