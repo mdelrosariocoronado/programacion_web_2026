@@ -1,4 +1,4 @@
-# Trabajo Práctico N°5 - Vistas Dinámicas con Templ y SQLc (SSR)
+# Portal de Emprendimientos Tandil — Trabajo Práctico N°6 (Entrega Final: Interfaces Dinámicas con HTMX)
 
 ## Integrantes del grupo
 *   María Del Rosario Coronado
@@ -9,61 +9,88 @@
 
 ## Documentación del Proyecto
 
-Aplicación web desarrollada en Go que modela una red de emprendimientos locales en Tandil. Implementa una arquitectura en tres capas (**Presentación SSR con `templ` $\leftrightarrow$ Handlers $\rightarrow$ Services $\rightarrow$ Repositories (`sqlc`) $\rightarrow$ PostgreSQL**), renderizando las vistas HTML dinámicamente desde el servidor sin depender de JavaScript en el cliente.
+Aplicación web desarrollada en Go que modela una red centralizada de emprendimientos locales en Tandil, conectando emprendedores y clientes mediante publicaciones y suscripciones.
+
+El sistema implementa el **modelo de tres capas** (**Capa de Presentación SSR + HTMX con `templ` $\leftrightarrow$ Capa de Lógica de Negocio (`handlers` $\rightarrow$ `services`) $\rightarrow$ Capa de Acceso a Datos (`repositories` + `sqlc` $\rightarrow$ PostgreSQL)**), ofreciendo una experiencia interactiva y fluida sin recargas completas de página y sin depender de JavaScript en el cliente.
+
+### Estructura del Proyecto
+```text
+.
+├── cmd/server/main.go          # Punto de entrada HTTP, inyección de dependencias y enrutamiento
+├── db/
+│   ├── migrations/             # Migraciones DDL versionadas con Atlas
+│   ├── queries/                # Consultas SQL puras para sqlc
+│   ├── schema/                 # Definición del esquema relacional PostgreSQL
+│   └── sqlc/                   # Código Go fuertemente tipado generado por sqlc
+├── internal/
+│   ├── handlers/               # Handlers HTTP (vistas SSR/HTMX y endpoints REST JSON) + tests
+│   ├── repositories/           # Capa de acceso a datos desacoplada + tests de integración
+│   └── services/               # Lógica de negocio y validaciones de dominio + tests unitarios
+├── static/                     # Archivos estáticos (styles.css, tipografías e imágenes)
+├── views/                      # Componentes HTML tipados en Templ (*.templ y *_templ.go) + tests
+├── docker-compose.yml          # Orquestación de PostgreSQL 16 y aplicación
+├── Makefile                    # Automatización (run-app, test, generate, test-api)
+└── run-app.sh                  # Script ejecutable equivalente a make run-app
+```
 
 ### Modelo de Datos
-* **`emprendimientos`:** Perfil del negocio, rubro y datos de contacto.
-* **`usuarios`:** Clientes y emprendedores con control de acceso por roles (`administrador`, `emprendedor`, `cliente`).
-* **`publicaciones`:** Contenido publicado por cada emprendimiento (`producto`, `promocion`, `servicio` u `otro`), vinculado mediante clave foránea con eliminación en cascada (`ON DELETE CASCADE`).
+* **`emprendimientos`:** Perfil del negocio, rubro, descripción, URL, logo, contacto y estado.
+* **`usuarios`:** Clientes, emprendedores y administradores con validación de email único, clave y rol (`administrador`, `emprendedor`, `cliente`), y relación opcional a un emprendimiento (`id_emprendimiento`).
+* **`publicaciones`:** Contenido publicado por cada emprendimiento (`producto`, `promocion`, `servicio` u `otro`), con precio opcional y eliminación en cascada (`ON DELETE CASCADE`) al borrar su emprendimiento.
 * **`suscripciones`:** Tabla intermedia que materializa la relación N:M entre usuarios y los emprendimientos que siguen.
 
-### Herramientas y Patrones
-* **Server-Side Rendering (SSR) con `templ`:** La capa de presentación se define en componentes tipados dentro de `views/` (`layout.templ`, `emprendimientos.templ`, `usuarios.templ`, `publicaciones.templ`) que se compilan a código Go nativo (`*_templ.go`), brindando seguridad de tipos en compilación y escapado automático contra ataques XSS.
-* **Patrón Post/Redirect/Get (PRG):** El alta de entidades se realiza mediante formularios HTML clásicos (`method="POST"`). El servidor procesa los datos con `r.ParseForm()`, valida y persiste mediante la capa de servicios y responde con una redirección HTTP (`303 See Other`) hacia la ruta `GET`, evitando reenvíos accidentales al recargar la página.
-* **SQL Directo con `sqlc`:** Compilación de consultas SQL puras a código Go seguro y fuertemente tipado.
-* **Migraciones con Atlas:** Versionado reproducible del esquema relacional en `db/migrations/`.
-* **Entorno con Docker Compose:** Ejecución del motor PostgreSQL y la aplicación en contenedores reproducibles.
+### Arquitectura, Herramientas y Patrones Aplicados
+* **Interfaces Reactivas con HTMX (TP 6):** En lugar de recargar la página completa (PRG del TP 5) o mantener estado/JSON en JavaScript cliente (TP 4), los formularios y botones interactúan con el servidor mediante atributos declarativos HTML:
+  * **Alta sin recarga:** Al enviar un formulario, el servidor persiste la entidad mediante la capa `services`, vuelve a consultar el listado actualizado y devuelve únicamente el fragmento HTML del componente de lista (`EmprendimientoList`, `UsuarioList`, `PublicacionList`).
+  * **Limpieza automática de formularios (*Out-of-Band Swap*):** En la misma respuesta `POST`, el servidor envía un segundo fragmento con `hx-swap-oob="true"` (`EmprendimientoFormOOB`, `UsuarioFormOOB`, `PublicacionFormOOB`) para reemplazar el formulario por uno limpio sin recargar la vista ni usar JS.
+  * **Borrado sin recarga:** Cada fila de las tablas incluye un botón de borrado con diálogo de confirmación. El servidor elimina el registro y responde `200 OK` con cuerpo vacío, indicando a HTMX que remueva la fila del DOM instantáneamente.
+* **Server-Side Rendering (SSR) con `templ` (TP 5):** Componentes HTML compilados a código Go nativo en `views/` (`layout.templ`, `home.templ`, `emprendimientos.templ`, `usuarios.templ`, `publicaciones.templ`) con chequeo de tipos en compilación y escapado automático contra ataques XSS.
+* **Arquitectura en Capas y API REST (TP 3):** Separación estricta de responsabilidades (`handlers` $\rightarrow$ `services` $\rightarrow$ `repositories`), manteniendo además los endpoints REST `/api/...` y sus pruebas E2E.
+* **SQL Directo tipado con `sqlc` y Migraciones con Atlas (TP 2):** Consultas SQL compiladas a structs y métodos Go seguros, más versionado reproducible del esquema en PostgreSQL.
+* **Contenedores con Docker Compose:** Entorno reproducible y automatizado para la base de datos y las pruebas.
 
 ## Requisitos Previos
 
-Antes de ejecutar este proyecto, asegúrate de contar con las siguientes herramientas instaladas:
+Antes de ejecutar este proyecto, asegurate de contar con las siguientes herramientas instaladas:
 
 * **[Git](https://git-scm.com/downloads)**
 * **[Docker](https://docs.docker.com/get-docker/) & Docker Compose** (en ejecución)
-* **[Go](https://go.dev/dl/)** (v1.22 o superior / compatible con `templ` (usamos v1.26 para este tp))
+* **[Go](https://go.dev/dl/)** (v1.26 o superior, compatible con `templ`)
 * **[Atlas CLI](https://atlasgo.io/getting-started/)** (para la aplicación de migraciones DDL)
-* **[sqlc](https://docs.sqlc.dev/en/latest/overview/install.html)** (para la generación tipada de repositorios)
-* **[templ](https://templ.guide/)** (se ejecuta automáticamente vía `go run github.com/a-h/templ/cmd/templ@latest generate`)
+* **[sqlc](https://docs.sqlc.dev/en/latest/overview/install.html)** *(opcional: si no está en el PATH, `make run-app` utiliza el código pregenerado en `db/sqlc/`)*
+* **[templ](https://templ.guide/)** *(se ejecuta automáticamente vía `go run github.com/a-h/templ/cmd/templ generate`)*
 
 ---
 
-## Inicio Rápido: Clonar y Ejecutar la Aplicación (TP 5)
+## Inicio Rápido: Clonar y Ejecutar la Aplicación (TP 6)
 
-Para evaluar la aplicación renderizada en el servidor de punta a punta en un entorno limpio:
+Para evaluar la aplicación de punta a punta en un entorno limpio:
 
-**1. Clonar el repositorio y acceder a la rama `tp5`:**
+**1. Clonar el repositorio y acceder a la rama `tp6`:**
 ```bash
 git clone https://github.com/mdelrosariocoronado/prog_web.git
 cd prog_web
-git checkout tp5
+git checkout tp6
 ```
 
 **2. Ejecutar la aplicación con el ciclo completo automatizado:**
 ```bash
 make run-app
 ```
+*(O de forma equivalente ejecutando directamente el script bash: `./run-app.sh`)*
 
 Este comando ejecuta automáticamente las tres etapas requeridas por la cátedra:
 1. **Tareas previas:**
-   * Ejecución de `sqlc generate` y compilación de componentes de vista con `templ generate`.
-   * Compilación del servidor Go (`go build`).
+   * Ejecución de `sqlc generate` (si está disponible) y compilación de componentes de vista con `templ generate`.
+   * Compilación del binario del servidor Go (`go build -o bin/server ./cmd/server`).
    * Limpieza de contenedores y volúmenes previos (`docker compose down -v --remove-orphans`).
    * Levantamiento del contenedor de base de datos PostgreSQL (`docker compose up -d db`) y espera activa hasta que acepte conexiones (`pg_isready`).
    * Aplicación de migraciones DDL con Atlas.
 2. **Ejecución de la aplicación:**
    * Inicia el servidor HTTP en **`http://localhost:8080`**.
+   * Desde el navegador se puede recorrer el portal en `/`, `/emprendimientos`, `/usuarios` y `/publicaciones`, creando y eliminando registros sin recargas completas de página.
 3. **Tareas posteriores (al detener con `Ctrl+C`):**
-   * Captura la señal de cierre y elimina automáticamente los contenedores, volúmenes y binarios temporales creados.
+   * Captura la señal de cierre (`EXIT`, `INT`, `TERM`) y elimina automáticamente todos los contenedores, volúmenes y binarios temporales creados.
 
 ---
 
@@ -78,28 +105,31 @@ make test-api
 
 ---
 
-## Guía de Otros Comandos del `Makefile`
+## Guía de Comandos del `Makefile`
 
-* **`make run-app`:** Ciclo completo del TP5 (tareas previas + servidor en `http://localhost:8080` + limpieza posterior de contenedores y volúmenes al salir).
+* **`make run-app`** *(o `./run-app.sh`)*: Ciclo completo de la entrega (tareas previas + servidor en `http://localhost:8080` + limpieza automática de contenedores y volúmenes al detener).
+* **`make test`:** Genera código (`sqlc`/`templ`), levanta PostgreSQL en Docker, aplica migraciones, ejecuta toda la suite de tests en Go (`views`, `handlers`, `services`, `repositories`) y limpia contenedores/volúmenes al finalizar.
 * **`make generate`:** Regenera el código Go de `sqlc` (`db/sqlc/`) y de `templ` (`views/*_templ.go`).
-* **`make run`:** Genera las vistas `templ`, levanta PostgreSQL en Docker, aplica migraciones e inicia el servidor localmente.
-* **`make test`:** Ejecuta los tests unitarios y de integración en Go levantando y limpiando la BD automáticamente.
+* **`make run`:** Genera las vistas `templ`, levanta PostgreSQL en Docker, aplica migraciones e inicia el servidor localmente para desarrollo.
 
 ---
 
 ## Tabla de Rutas y Endpoints
 
-### Vistas Dinámicas SSR con `templ` (TP 5)
+### Vistas Dinámicas SSR + HTMX con `templ` (TP 5 / TP 6)
 | Método | Ruta | Respuesta | Descripción |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/` | `200 OK` (HTML) | Página principal renderizada en el servidor (Gestión de Emprendimientos) |
-| `GET` | `/emprendimientos` | `200 OK` (HTML) | Vista SSR con formulario de alta y tabla de emprendimientos |
-| `POST` | `/emprendimientos` | `303 See Other` | Procesa el formulario de nuevo emprendimiento y redirige a `/emprendimientos` (PRG) |
-| `GET` | `/usuarios` | `200 OK` (HTML) | Vista SSR con formulario de alta y tabla de usuarios |
-| `POST` | `/usuarios` | `303 See Other` | Procesa el formulario de nuevo usuario y redirige a `/usuarios` (PRG) |
-| `GET` | `/publicaciones` | `200 OK` (HTML) | Vista SSR con formulario de alta y listado de publicaciones |
-| `POST` | `/publicaciones` | `303 See Other` | Procesa el formulario de nueva publicación y redirige a `/publicaciones` (PRG) |
-| `GET` | `/static/` | `200 OK` | Servidor de archivos estáticos (hoja de estilos `style.css` e imágenes) |
+| `GET` | `/` | `200 OK` (HTML) | Página de inicio del Portal de Emprendimientos con accesos a los 3 módulos |
+| `GET` | `/emprendimientos` | `200 OK` (HTML) | Vista SSR con formulario HTMX de alta y tabla de emprendimientos |
+| `POST` | `/emprendimientos` | `200 OK` (HTML) | Crea el emprendimiento vía HTMX y devuelve la lista actualizada + formulario limpio (OOB swap) |
+| `DELETE` | `/emprendimientos/{id}` | `200 OK` (vacío) | Elimina el emprendimiento vía HTMX y remueve la fila `<tr>` del DOM sin recargar |
+| `GET` | `/usuarios` | `200 OK` (HTML) | Vista SSR con formulario HTMX de alta y tabla de usuarios |
+| `POST` | `/usuarios` | `200 OK` (HTML) | Crea el usuario vía HTMX y devuelve la lista actualizada + formulario limpio (OOB swap) |
+| `DELETE` | `/usuarios/{id}` | `200 OK` (vacío) | Elimina el usuario vía HTMX y remueve la fila `<tr>` del DOM sin recargar |
+| `GET` | `/publicaciones` | `200 OK` (HTML) | Vista SSR con formulario HTMX y listado de publicaciones (admite filtro `?id_emprendimiento={id}`) |
+| `POST` | `/publicaciones` | `200 OK` (HTML) | Crea la publicación vía HTMX y devuelve la lista actualizada + formulario limpio (OOB swap) |
+| `DELETE` | `/publicaciones/{id}` | `200 OK` (vacío) | Elimina la publicación vía HTMX y remueve la fila `<tr>` del DOM sin recargar |
+| `GET` | `/static/` | `200 OK` | Servidor de archivos estáticos (`styles.css`, tipografías e imágenes) |
 | `GET` | `/health` | `200 OK` | Chequeo de estado del servidor |
 
 ### Emprendimientos (`/api/emprendimientos`)
