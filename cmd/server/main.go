@@ -58,12 +58,13 @@ func main() {
 	//SUSCRIPCION -inyeccion de dependencias
 	suscripcionRepo := repositories.NewSuscripcionRepository(queries)
 	suscripcionService := services.NewSuscripcionService(suscripcionRepo)
-	suscripcionHandler := handlers.NewSuscripcionHandler(suscripcionService)
 
 	// EMPRENDIMIENTOS
 	empRepo := repositories.NewEmprendimientoRepository(queries)
 	empService := services.NewEmprendimientoService(empRepo)
 	empHandler := handlers.NewEmprendimientoHandler(empService)
+
+	suscripcionHandler := handlers.NewSuscripcionHandler(suscripcionService, usuarioService, empService)
 
 	// PUBLICACIONES - inyeccion de dependencias
 	pubRepo := repositories.NewPublicacionRepository(queries)
@@ -100,6 +101,11 @@ func main() {
 	router.HandleFunc("GET /publicaciones", pubHandler.RenderPage)
 	router.HandleFunc("POST /publicaciones", pubHandler.CreateFromForm)
 	router.HandleFunc("DELETE /publicaciones/{id}", pubHandler.DeleteFromHTMX)
+
+	// 4. Suscripciones
+	router.HandleFunc("GET /suscripciones", suscripcionHandler.RenderPage)
+	router.HandleFunc("POST /suscripciones/{id_usuario}/{id_emprendimiento}", suscripcionHandler.SubscribeFromHTMX)
+	router.HandleFunc("DELETE /suscripciones/{id_usuario}/{id_emprendimiento}", suscripcionHandler.CancelFromHTMX)
 
 	// endpoint de compatibilidad
 	router.HandleFunc("/users", usuarioHandler.HandleUsers)

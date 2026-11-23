@@ -268,6 +268,53 @@ func TestPublicacionHandler_RenderPage(t *testing.T) {
 			t.Errorf("se esperaba ver 'Pub Filtrada' en el body, se obtuvo: %s", body)
 		}
 	})
+
+	t.Run("busqueda_parcial_htmx", func(t *testing.T) {
+		mockSvc := &mockPublicacionService{
+			listFunc: func(ctx context.Context) ([]db.Publicacione, error) {
+				return []db.Publicacione{
+					{IDPublicacion: 1, IDEmprendimiento: 1, Titulo: "Cafe 2x1", Tipo: "promocion"},
+					{IDPublicacion: 2, IDEmprendimiento: 2, Titulo: "Corte de pelo", Tipo: "servicio"},
+				}, nil
+			},
+		}
+		handler := NewPublicacionHandler(mockSvc)
+
+		req := httptest.NewRequest(http.MethodGet, "/publicaciones?q=cafe", nil)
+		req.Header.Set("HX-Request", "true")
+		rr := httptest.NewRecorder()
+
+		handler.RenderPage(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Fatalf("se esperaba 200, se obtuvo %d", rr.Code)
+		}
+		body := rr.Body.String()
+		if strings.Contains(body, "Gestión de Publicaciones") {
+			t.Errorf("la búsqueda HTMX debe devolver solo el fragmento de lista")
+		}
+		if !strings.Contains(body, "Cafe 2x1") || strings.Contains(body, "Corte de pelo") {
+			t.Errorf("se esperaba solo 'Cafe 2x1', se obtuvo: %s", body)
+		}
+	})
+
+	t.Run("navegacion_boosted_devuelve_pagina_completa", func(t *testing.T) {
+		handler := NewPublicacionHandler(&mockPublicacionService{})
+
+		req := httptest.NewRequest(http.MethodGet, "/publicaciones", nil)
+		req.Header.Set("HX-Request", "true")
+		req.Header.Set("HX-Boosted", "true")
+		rr := httptest.NewRecorder()
+
+		handler.RenderPage(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Fatalf("se esperaba 200, se obtuvo %d", rr.Code)
+		}
+		if !strings.Contains(rr.Body.String(), "Gestión de Publicaciones") {
+			t.Errorf("con HX-Boosted debe renderizarse la página completa")
+		}
+	})
 }
 
 func TestPublicacionHandler_CreateFromForm(t *testing.T) {

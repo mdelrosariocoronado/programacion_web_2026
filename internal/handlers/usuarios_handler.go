@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	db "emprendimientos.com/servidor-go/db/sqlc"
 	"emprendimientos.com/servidor-go/internal/services"
 	"emprendimientos.com/servidor-go/views"
 )
@@ -68,7 +69,17 @@ func (h *UserHandler) RenderPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := views.UsuariosPage(usuarios).Render(r.Context(), w); err != nil {
+	query := strings.TrimSpace(r.URL.Query().Get("q"))
+	usuarios = filtrarUsuarios(usuarios, query)
+
+	if isHTMXPartial(r) {
+		if err := views.UsuarioList(usuarios).Render(r.Context(), w); err != nil {
+			http.Error(w, "Error al renderizar la lista: "+err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	if err := views.UsuariosPage(usuarios, query).Render(r.Context(), w); err != nil {
 		http.Error(w, "Error al renderizar la vista: "+err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -77,10 +88,10 @@ func (h *UserHandler) HandleUsers(w http.ResponseWriter, r *http.Request) {
 	h.RenderPage(w, r)
 }
 
-// CreateFromForm: POST /usuarios (Manejo de formulario clásico con patrón Post/Redirect/Get)
+// CreateFromForm: POST /usuarios
 func (h *UserHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error al procesar los datos del formulario", http.StatusBadRequest)
+		SendHTMXError(w, http.StatusBadRequest, "Error al procesar los datos del formulario")
 		return
 	}
 
@@ -93,7 +104,7 @@ func (h *UserHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
 	if idEmpStr := strings.TrimSpace(r.FormValue("id_emprendimiento")); idEmpStr != "" {
 		idVal, err := strconv.Atoi(idEmpStr)
 		if err != nil {
-			http.Error(w, "El ID de emprendimiento debe ser numérico", http.StatusBadRequest)
+			SendHTMXError(w, http.StatusBadRequest, "El ID de emprendimiento debe ser numérico")
 			return
 		}
 		id32 := int32(idVal)
@@ -114,17 +125,16 @@ func (h *UserHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
 			errors.Is(err, services.ErrRolInvalido) ||
 			errors.Is(err, services.ErrNombreVacio) ||
 			errors.Is(err, services.ErrEmailDuplicado) {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			SendHTMXError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		http.Error(w, "error interno del servidor", http.StatusInternalServerError)
+		SendHTMXError(w, http.StatusInternalServerError, "error interno del servidor")
 		return
 	}
 
-	// HTMX: devolver la lista actualizada y un segundo fragmento OOB para limpiar el formulario
 	usuarios, err := h.service.ListarUsuarios(r.Context())
 	if err != nil {
-		http.Error(w, "Error al obtener la lista actualizada: "+err.Error(), http.StatusInternalServerError)
+		SendHTMXError(w, http.StatusInternalServerError, "Error al obtener la lista actualizada: "+err.Error())
 		return
 	}
 	if err := views.UsuarioList(usuarios).Render(r.Context(), w); err != nil {
@@ -133,6 +143,10 @@ func (h *UserHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := views.UsuarioFormOOB().Render(r.Context(), w); err != nil {
 		http.Error(w, "Error al renderizar el formulario limpio: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := views.ErrorBannerOOB().Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al limpiar alertas: "+err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -141,16 +155,16 @@ func (h *UserHandler) DeleteFromHTMX(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.ParseInt(idStr, 10, 32)
 	if err != nil || id <= 0 {
-		http.Error(w, "Identificador de usuario inválido", http.StatusBadRequest)
+		SendHTMXError(w, http.StatusBadRequest, "Identificador de usuario inválido")
 		return
 	}
 
 	if err := h.service.EliminarUsuario(r.Context(), int32(id)); err != nil {
 		if errors.Is(err, services.ErrUsuarioNoEncontrado) {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			SendHTMXError(w, http.StatusNotFound, err.Error())
 			return
 		}
-		http.Error(w, "Error al eliminar el usuario", http.StatusInternalServerError)
+		SendHTMXError(w, http.StatusInternalServerError, "Error al eliminar el usuario")
 		return
 	}
 
@@ -294,4 +308,20 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	// 204 No Content no lleva body en la respuesta
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func filtrarUsuarios(usuarios []db.Usuario, query string) []db.Usuario {
+	if query == "" {
+		return usuarios
+	}
+	q := strings.ToLower(query)
+	res := make([]db.Usuario, 0, len(usuarios))
+	for _, u := range usuarios {
+		if strings.Contains(strings.ToLower(u.NombreCompleto), q) ||
+			strings.Contains(strings.ToLower(u.Email), q) ||
+			strings.Contains(strings.ToLower(u.Rol), q) {
+			res = append(res, u)
+		}
+	}
+	return res
 }

@@ -73,3 +73,20 @@ func TestEmprendimientoHandler_Validaciones(t *testing.T) {
 		}
 	})
 }
+
+func TestFiltrarEmprendimientos(t *testing.T) {
+	items := []services.EmprendimientoResponse{
+		{IDEmprendimiento: 1, Nombre: "Cafetería Sierra", Rubro: "Gastronomía", Descripcion: "Café de especialidad"},
+		{IDEmprendimiento: 2, Nombre: "Taller Norte", Rubro: "Artesanías", Contacto: "taller@tandil.com"},
+	}
+
+	if got := filtrarEmprendimientos(items, ""); len(got) != 2 {
+		t.Fatalf("sin filtro se esperaban 2 elementos, se obtuvieron %d", len(got))
+	}
+	if got := filtrarEmprendimientos(items, "ESPECIALIDAD"); len(got) != 1 || got[0].IDEmprendimiento != 1 {
+		t.Errorf("filtro por descripción inesperado: %+v", got)
+	}
+	if got := filtrarEmprendimientos(items, "artesan"); len(got) != 1 || got[0].IDEmprendimiento != 2 {
+		t.Errorf("filtro por rubro inesperado: %+v", got)
+	}
+}

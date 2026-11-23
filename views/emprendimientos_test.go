@@ -120,7 +120,7 @@ func TestEmprendimientoList_WithItems(t *testing.T) {
 
 func TestEmprendimientosPage(t *testing.T) {
 	var buf bytes.Buffer
-	err := EmprendimientosPage([]services.EmprendimientoResponse{}).Render(context.Background(), &buf)
+	err := EmprendimientosPage([]services.EmprendimientoResponse{}, "").Render(context.Background(), &buf)
 	if err != nil {
 		t.Fatalf("error rendering EmprendimientosPage: %v", err)
 	}
@@ -129,7 +129,12 @@ func TestEmprendimientosPage(t *testing.T) {
 	expectedSubstrings := []string{
 		"Gestión de Emprendimientos",
 		`htmx.org`,
+		`hx-boost="true"`,
+		`id="htmx-error"`,
+		`name="htmx-config"`,
 		`hx-post="/emprendimientos"`,
+		`hx-get="/emprendimientos"`,
+		`hx-trigger="keyup changed delay:500ms, search"`,
 		"No hay emprendimientos registrados todavía.",
 	}
 

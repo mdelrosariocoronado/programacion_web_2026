@@ -1,0 +1,130 @@
+package views
+
+import (
+	"fmt"
+
+	"emprendimientos.com/servidor-go/db/sqlc"
+	"emprendimientos.com/servidor-go/internal/services"
+)
+
+templ SuscripcionesSelector(usuarios []sqlc.Usuario, selectedUserID int32) {
+	<section class="bloque-formulario">
+		<article>
+			<h3>Seleccionar Usuario</h3>
+			if len(usuarios) == 0 {
+				<p>
+					No hay usuarios registrados.
+					<a href="/usuarios" class="badge badge-destacado">Creá un usuario</a>
+					para poder suscribirte.
+				</p>
+			} else {
+				<div class="selector-usuario">
+					<label>
+						Usuario activo
+						<select
+							name="id_usuario"
+							hx-get="/suscripciones"
+							hx-trigger="change"
+							hx-target="#panel-suscripciones"
+							hx-swap="outerHTML"
+							hx-push-url="true"
+						>
+							for _, u := range usuarios {
+								<option value={ fmt.Sprint(u.IDUsuario) } selected?={ u.IDUsuario == selectedUserID }>
+									{ fmt.Sprintf("%s (%s)", u.NombreCompleto, u.Email) }
+								</option>
+							}
+						</select>
+					</label>
+				</div>
+			}
+		</article>
+	</section>
+}
+
+templ SuscripcionesPanel(selectedUserID int32, emprendimientos []services.EmprendimientoResponse, suscripciones map[int32]sqlc.Suscripcione) {
+	<section id="panel-suscripciones" class="bloque-listado">
+		<article>
+			<h3>Emprendimientos y Suscripciones</h3>
+			if selectedUserID == 0 {
+				<p>Seleccioná o registrá un usuario para gestionar sus suscripciones.</p>
+			} else if len(emprendimientos) == 0 {
+				<p>
+					No hay emprendimientos registrados todavía.
+					<a href="/emprendimientos" class="badge badge-destacado">Crear emprendimiento</a>
+				</p>
+			} else {
+				<p class="resumen-suscripciones">
+					{ fmt.Sprintf("Suscripciones activas: %d de %d emprendimientos", len(suscripciones), len(emprendimientos)) }
+				</p>
+				<figure>
+					<table role="grid">
+						<thead>
+							<tr>
+								<th scope="col">ID</th>
+								<th scope="col">Emprendimiento</th>
+								<th scope="col">Rubro</th>
+								<th scope="col">Publicaciones</th>
+								<th scope="col">Estado</th>
+								<th scope="col">Acción</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, emp := range emprendimientos {
+								<tr>
+									<td>{ fmt.Sprint(emp.IDEmprendimiento) }</td>
+									<td><strong>{ emp.Nombre }</strong></td>
+									<td><span class="badge badge-rubro">{ emp.Rubro }</span></td>
+									<td>
+										<a href={ templ.SafeURL(fmt.Sprintf("/publicaciones?id_emprendimiento=%d", emp.IDEmprendimiento)) } class="badge badge-destacado">Ver publicaciones</a>
+									</td>
+									<td>
+										if sub, suscrito := suscripciones[emp.IDEmprendimiento]; suscrito {
+											if sub.FechaSub.Valid {
+												<span class="badge badge-activo">{ fmt.Sprintf("Suscrito (%s)", sub.FechaSub.Time.Format("02/01/2006")) }</span>
+											} else {
+												<span class="badge badge-activo">Suscrito</span>
+											}
+										} else {
+											<span class="badge badge-inactivo">No suscrito</span>
+										}
+									</td>
+									<td>
+										if _, suscrito := suscripciones[emp.IDEmprendimiento]; suscrito {
+											<button
+												type="button"
+												class="btn-eliminar"
+												hx-delete={ fmt.Sprintf("/suscripciones/%d/%d", selectedUserID, emp.IDEmprendimiento) }
+												hx-target="#panel-suscripciones"
+												hx-swap="outerHTML"
+												hx-confirm="¿Estás seguro de que querés cancelar esta suscripción?"
+											>Cancelar</button>
+										} else {
+											<button
+												type="button"
+												class="btn-suscribir"
+												hx-post={ fmt.Sprintf("/suscripciones/%d/%d", selectedUserID, emp.IDEmprendimiento) }
+												hx-target="#panel-suscripciones"
+												hx-swap="outerHTML"
+											>Suscribirse</button>
+										}
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</figure>
+			}
+		</article>
+	</section>
+}
+
+templ SuscripcionesPage(usuarios []sqlc.Usuario, selectedUserID int32, emprendimientos []services.EmprendimientoResponse, suscripciones map[int32]sqlc.Suscripcione) {
+	@Layout("Suscripciones") {
+		<h2>Gestión de Suscripciones</h2>
+		<div class="layout-principal">
+			@SuscripcionesSelector(usuarios, selectedUserID)
+			@SuscripcionesPanel(selectedUserID, emprendimientos, suscripciones)
+		</div>
+	}
+}

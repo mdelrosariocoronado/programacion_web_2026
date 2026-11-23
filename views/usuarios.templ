@@ -129,12 +129,15 @@ templ UsuarioList(usuarios []sqlc.Usuario) {
 }
 
 // UsuariosPage compone Layout, UsuarioForm y UsuarioList.
-templ UsuariosPage(usuarios []sqlc.Usuario) {
+templ UsuariosPage(usuarios []sqlc.Usuario, query string) {
 	@Layout("Usuarios") {
 		<h2>Gestión de Usuarios</h2>
 		<div class="layout-principal">
 			@UsuarioForm()
-			@UsuarioList(usuarios)
+			<div class="seccion-listado">
+				@SearchBar("/usuarios", "#lista-usuarios", query, "Buscar por nombre, email o rol...")
+				@UsuarioList(usuarios)
+			</div>
 		</div>
 	}
 }

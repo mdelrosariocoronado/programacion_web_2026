@@ -126,7 +126,7 @@ func TestUsuarioList_WithItems(t *testing.T) {
 
 func TestUsuariosPage(t *testing.T) {
 	var buf bytes.Buffer
-	err := UsuariosPage([]sqlc.Usuario{}).Render(context.Background(), &buf)
+	err := UsuariosPage([]sqlc.Usuario{}, "").Render(context.Background(), &buf)
 	if err != nil {
 		t.Fatalf("error rendering UsuariosPage: %v", err)
 	}
@@ -136,6 +136,8 @@ func TestUsuariosPage(t *testing.T) {
 		"Gestión de Usuarios",
 		`htmx.org`,
 		`hx-post="/usuarios"`,
+		`hx-get="/usuarios"`,
+		`hx-trigger="keyup changed delay:500ms, search"`,
 		"No hay usuarios registrados",
 	}
 

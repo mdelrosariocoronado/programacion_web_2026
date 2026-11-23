@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"strings"
@@ -30,10 +31,24 @@ func SendError(w http.ResponseWriter, statusCode int, message string) {
 	SendJSON(w, statusCode, ResponseError{Error: message})
 }
 
+// Redirige errores HTMX al banner #htmx-error para no reemplazar la tabla ni el formulario
+func SendHTMXError(w http.ResponseWriter, statusCode int, message string) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("HX-Retarget", "#htmx-error")
+	w.Header().Set("HX-Reswap", "innerHTML")
+	w.WriteHeader(statusCode)
+	fmt.Fprint(w, html.EscapeString(message))
+}
+
+// Distingue peticiones parciales HTMX (ej. buscador) de navegación completa con hx-boost
+func isHTMXPartial(r *http.Request) bool {
+	return r.Header.Get("HX-Request") == "true" && r.Header.Get("HX-Boosted") != "true"
+}
+
 // ParseJSON decodifica el cuerpo de la petición HTTP a la estructura indicada
 func ParseJSON(r *http.Request, dst any) error {
 	if r.Body == nil {
-		return errors.New("el cuerpo de la solicitud no puede estar vacío")
+		return errors.New("El cuerpo de la solicitud no puede estar vacío")
 	}
 	defer r.Body.Close()
 
@@ -48,14 +63,14 @@ func ParseJSON(r *http.Request, dst any) error {
 		case errors.As(err, &syntaxError):
 			return fmt.Errorf("JSON mal formado en el byte %d", syntaxError.Offset)
 		case errors.As(err, &unmarshalTypeError):
-			return fmt.Errorf("tipo de dato incorrecto para el campo '%s'", unmarshalTypeError.Field)
+			return fmt.Errorf("Tipo de dato incorrecto para el campo '%s'", unmarshalTypeError.Field)
 		case errors.Is(err, io.EOF):
-			return errors.New("el cuerpo de la solicitud está vacío")
+			return errors.New("El cuerpo de la solicitud está vacío")
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
 			campo := strings.TrimPrefix(err.Error(), "json: unknown field ")
-			return fmt.Errorf("campo no permitido en el JSON: %s", campo)
+			return fmt.Errorf("Campo no permitido en el JSON: %s", campo)
 		default:
-			return fmt.Errorf("error al procesar JSON: %w", err)
+			return fmt.Errorf("Error al procesar JSON: %w", err)
 		}
 	}
 

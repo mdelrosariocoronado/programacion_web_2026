@@ -11,7 +11,9 @@ import (
 )
 
 //mock para testear funcionalidad, parcheando las funcionalidades
-type MockUserService struct{}
+type MockUserService struct {
+	listarFunc func(ctx context.Context) ([]db.Usuario, error)
+}
 
 func (m *MockUserService) CrearUsuario(ctx context.Context, nombre, email, clave, rol string, idEmprendimiento *int32) (db.Usuario, error) {
 	return db.Usuario{
@@ -31,6 +33,9 @@ func (m *MockUserService) ObtenerUsuarioPorEmail(ctx context.Context, email stri
 }
 
 func (m *MockUserService) ListarUsuarios(ctx context.Context) ([]db.Usuario, error) {
+	if m.listarFunc != nil {
+		return m.listarFunc(ctx)
+	}
 	return []db.Usuario{}, nil
 }
 
@@ -69,23 +74,73 @@ func TestUserHandler_Create(t *testing.T) {
 }
 
 func TestUserHandler_RenderPage(t *testing.T) {
-	mockService := &MockUserService{}
-	userHandler := NewUserHandler(mockService)
+	t.Run("carga_completa", func(t *testing.T) {
+		mockService := &MockUserService{}
+		userHandler := NewUserHandler(mockService)
 
-	req := httptest.NewRequest(http.MethodGet, "/usuarios", nil)
-	rr := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/usuarios", nil)
+		rr := httptest.NewRecorder()
 
-	userHandler.RenderPage(rr, req)
+		userHandler.RenderPage(rr, req)
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("RenderPage devolvió código %v, se esperaba %v. Respuesta: %s",
-			status, http.StatusOK, rr.Body.String())
-	}
+		if status := rr.Code; status != http.StatusOK {
+			t.Errorf("RenderPage devolvió código %v, se esperaba %v. Respuesta: %s",
+				status, http.StatusOK, rr.Body.String())
+		}
 
-	body := rr.Body.String()
-	if !strings.Contains(body, "Gestión de Usuarios") {
-		t.Errorf("Se esperaba que la respuesta contenga 'Gestión de Usuarios', se obtuvo: %s", body)
-	}
+		body := rr.Body.String()
+		if !strings.Contains(body, "Gestión de Usuarios") {
+			t.Errorf("Se esperaba que la respuesta contenga 'Gestión de Usuarios', se obtuvo: %s", body)
+		}
+	})
+
+	t.Run("busqueda_parcial_htmx", func(t *testing.T) {
+		mockService := &MockUserService{
+			listarFunc: func(ctx context.Context) ([]db.Usuario, error) {
+				return []db.Usuario{
+					{IDUsuario: 1, NombreCompleto: "Carlos Ruiz", Email: "carlos@tandil.com", Rol: "cliente"},
+					{IDUsuario: 2, NombreCompleto: "Ana López", Email: "ana@tandil.com", Rol: "emprendedor"},
+				}, nil
+			},
+		}
+		userHandler := NewUserHandler(mockService)
+
+		req := httptest.NewRequest(http.MethodGet, "/usuarios?q=carlos", nil)
+		req.Header.Set("HX-Request", "true")
+		rr := httptest.NewRecorder()
+
+		userHandler.RenderPage(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Fatalf("se esperaba 200, se obtuvo %d", rr.Code)
+		}
+		body := rr.Body.String()
+		if strings.Contains(body, "<!doctype html>") || strings.Contains(body, "Gestión de Usuarios") {
+			t.Errorf("la búsqueda HTMX debe devolver solo el fragmento de lista, no la página completa")
+		}
+		if !strings.Contains(body, "Carlos Ruiz") || strings.Contains(body, "Ana López") {
+			t.Errorf("se esperaba solo a Carlos Ruiz filtrado, se obtuvo: %s", body)
+		}
+	})
+
+	t.Run("navegacion_boosted_devuelve_pagina_completa", func(t *testing.T) {
+		mockService := &MockUserService{}
+		userHandler := NewUserHandler(mockService)
+
+		req := httptest.NewRequest(http.MethodGet, "/usuarios", nil)
+		req.Header.Set("HX-Request", "true")
+		req.Header.Set("HX-Boosted", "true")
+		rr := httptest.NewRecorder()
+
+		userHandler.RenderPage(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Fatalf("se esperaba 200, se obtuvo %d", rr.Code)
+		}
+		if !strings.Contains(rr.Body.String(), "Gestión de Usuarios") {
+			t.Errorf("con HX-Boosted debe renderizarse la página completa")
+		}
+	})
 }
 
 func TestUserHandler_CreateFromForm(t *testing.T) {

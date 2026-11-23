@@ -28,17 +28,17 @@ func (h *PublicacionHandler) RenderPage(w http.ResponseWriter, r *http.Request) 
 	h.ListarHTML(w, r)
 }
 
-// CreateFromForm: POST /publicaciones (Manejo de formulario clásico con patrón Post/Redirect/Get)
+// CreateFromForm: POST /publicaciones
 func (h *PublicacionHandler) CreateFromForm(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error al procesar los datos del formulario", http.StatusBadRequest)
+		SendHTMXError(w, http.StatusBadRequest, "Error al procesar los datos del formulario")
 		return
 	}
 
 	idEmpStr := strings.TrimSpace(r.FormValue("id_emprendimiento"))
 	idEmp, err := strconv.Atoi(idEmpStr)
 	if err != nil || idEmp <= 0 {
-		http.Error(w, "El ID de emprendimiento debe ser un número entero positivo", http.StatusBadRequest)
+		SendHTMXError(w, http.StatusBadRequest, "El ID de emprendimiento debe ser un número entero positivo")
 		return
 	}
 
@@ -53,7 +53,7 @@ func (h *PublicacionHandler) CreateFromForm(w http.ResponseWriter, r *http.Reque
 	if precioStr := strings.TrimSpace(r.FormValue("precio")); precioStr != "" {
 		precio, err := strconv.ParseFloat(precioStr, 64)
 		if err != nil {
-			http.Error(w, "El precio debe ser un número válido", http.StatusBadRequest)
+			SendHTMXError(w, http.StatusBadRequest, "El precio debe ser un número válido")
 			return
 		}
 		input.Precio = &precio
@@ -65,17 +65,16 @@ func (h *PublicacionHandler) CreateFromForm(w http.ResponseWriter, r *http.Reque
 			errors.Is(err, services.ErrTipoInvalido) ||
 			errors.Is(err, services.ErrPrecioInvalido) ||
 			errors.Is(err, services.ErrIDEmprendimientoInvalido) {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			SendHTMXError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		http.Error(w, "Error al crear la publicación: "+err.Error(), http.StatusInternalServerError)
+		SendHTMXError(w, http.StatusInternalServerError, "Error al crear la publicación: "+err.Error())
 		return
 	}
 
-	// HTMX: devolver la lista actualizada y un segundo fragmento OOB para limpiar el formulario
 	publicaciones, err := h.service.List(r.Context())
 	if err != nil {
-		http.Error(w, "Error al obtener la lista actualizada: "+err.Error(), http.StatusInternalServerError)
+		SendHTMXError(w, http.StatusInternalServerError, "Error al obtener la lista actualizada: "+err.Error())
 		return
 	}
 	if err := views.PublicacionList(publicaciones).Render(r.Context(), w); err != nil {
@@ -84,6 +83,10 @@ func (h *PublicacionHandler) CreateFromForm(w http.ResponseWriter, r *http.Reque
 	}
 	if err := views.PublicacionFormOOB().Render(r.Context(), w); err != nil {
 		http.Error(w, "Error al renderizar el formulario limpio: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := views.ErrorBannerOOB().Render(r.Context(), w); err != nil {
+		http.Error(w, "Error al limpiar alertas: "+err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -91,16 +94,16 @@ func (h *PublicacionHandler) CreateFromForm(w http.ResponseWriter, r *http.Reque
 func (h *PublicacionHandler) DeleteFromHTMX(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		http.Error(w, "El parámetro 'id' debe ser un número entero positivo", http.StatusBadRequest)
+		SendHTMXError(w, http.StatusBadRequest, "El parámetro 'id' debe ser un número entero positivo")
 		return
 	}
 
 	if err := h.service.Delete(r.Context(), id); err != nil {
 		if errors.Is(err, services.ErrPublicacionNoEncontrada) {
-			http.Error(w, "Publicación no encontrada", http.StatusNotFound)
+			SendHTMXError(w, http.StatusNotFound, "Publicación no encontrada")
 			return
 		}
-		http.Error(w, "Error al eliminar la publicación: "+err.Error(), http.StatusInternalServerError)
+		SendHTMXError(w, http.StatusInternalServerError, "Error al eliminar la publicación: "+err.Error())
 		return
 	}
 
@@ -250,7 +253,37 @@ func (h *PublicacionHandler) ListarHTML(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if err := views.PublicacionesPage(publicaciones).Render(ctx, w); err != nil {
+	query := strings.TrimSpace(r.URL.Query().Get("q"))
+	publicaciones = filtrarPublicaciones(publicaciones, query)
+
+	if isHTMXPartial(r) {
+		if err := views.PublicacionList(publicaciones).Render(ctx, w); err != nil {
+			http.Error(w, "Error al renderizar la lista: "+err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	if err := views.PublicacionesPage(publicaciones, query).Render(ctx, w); err != nil {
 		http.Error(w, "Error al renderizar: "+err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func filtrarPublicaciones(pubs []sqlc.Publicacione, query string) []sqlc.Publicacione {
+	if query == "" {
+		return pubs
+	}
+	q := strings.ToLower(query)
+	res := make([]sqlc.Publicacione, 0, len(pubs))
+	for _, p := range pubs {
+		contenido := ""
+		if p.Contenido.Valid {
+			contenido = p.Contenido.String
+		}
+		if strings.Contains(strings.ToLower(p.Titulo), q) ||
+			strings.Contains(strings.ToLower(p.Tipo), q) ||
+			strings.Contains(strings.ToLower(contenido), q) {
+			res = append(res, p)
+		}
+	}
+	return res
 }

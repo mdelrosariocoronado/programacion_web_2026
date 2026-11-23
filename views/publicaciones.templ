@@ -142,12 +142,15 @@ templ PublicacionList(pubs []sqlc.Publicacione) {
 }
 
 // PublicacionesPage compone Layout, PublicacionForm y PublicacionList.
-templ PublicacionesPage(pubs []sqlc.Publicacione) {
+templ PublicacionesPage(pubs []sqlc.Publicacione, query string) {
 	@Layout("Publicaciones") {
 		<h2>Gestión de Publicaciones</h2>
 		<div class="layout-principal">
 			@PublicacionForm()
-			@PublicacionList(pubs)
+			<div class="seccion-listado">
+				@SearchBar("/publicaciones", "#lista-publicaciones", query, "Buscar por título, tipo o contenido...")
+				@PublicacionList(pubs)
+			</div>
 		</div>
 	}
 }

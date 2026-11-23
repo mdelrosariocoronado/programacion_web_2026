@@ -165,6 +165,41 @@ figure {
     width: 100%;
 }
 
+.seccion-listado {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.buscador-listado {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 16px 24px;
+}
+
+.buscador-listado input[type="search"] {
+    width: 100%;
+    padding: 0.5rem 0;
+    border: none;
+    border-bottom: 2px solid var(--color-mint-green);
+    font-size: 1rem;
+    font-family: var(--font-body);
+    background-color: transparent;
+    color: var(--color-text-body);
+    transition: border-color 0.3s ease;
+}
+
+.buscador-listado input[type="search"]:focus {
+    outline: none;
+    border-bottom-color: var(--color-featured-blue);
+}
+
+.buscador-listado input[type="search"]::placeholder {
+    color: gray;
+}
+
 form {
     display: flex;
     flex-direction: column;
@@ -293,9 +328,9 @@ button:hover, input[type="submit"]:hover, button[type="submit"]:hover, .btn-prin
 }
 
 .btn-eliminar {
-    background-color: #c94a4a;
-    border: 1px solid #c94a4a;
-    color: #ffffff;
+    background-color: var(--color-border);
+    border: 1px solid var(--color-border);
+    color: var(--color-dark-teal);
     font-size: 0.85rem;
     padding: 6px 14px;
     border-radius: 20px;
@@ -309,13 +344,72 @@ button:hover, input[type="submit"]:hover, button[type="submit"]:hover, .btn-prin
     transform: translateY(-1px);
 }
 
+.btn-suscribir {
+    background-color: var(--color-mint-green);
+    border: 1px solid var(--color-mint-green);
+    color: var(--color-dark-teal);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
 
+.btn-suscribir:hover {
+    background-color: var(--color-mint-green-hover);
+    border-color: var(--color-mint-green-hover);
+    transform: translateY(-1px);
+}
 
+.selector-usuario {
+    width: 100%;
+    max-width: 500px;
+}
 
+.selector-usuario label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-weight: 500;
+}
 
+.selector-usuario select {
+    width: 100%;
+    padding: 0.5rem 0;
+    border: none;
+    border-bottom: 2px solid var(--color-mint-green);
+    font-size: 1rem;
+    font-family: var(--font-body);
+    background-color: transparent;
+    color: var(--color-text-body);
+    transition: border-color 0.3s ease;
+}
 
+.selector-usuario select:focus {
+    outline: none;
+    border-bottom-color: var(--color-featured-blue);
+}
 
+.resumen-suscripciones {
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+}
 
+.htmx-error {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-featured-blue);
+    border-left: 5px solid var(--color-dark-teal);
+    color: var(--color-text-main);
+    font-family: var(--font-highlight);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 1.5rem;
+}
+
+.htmx-error:empty {
+    display: none;
+}
 
 table {
     border-collapse: separate;
@@ -341,6 +435,16 @@ tbody td {
 tbody tr:hover {
     background-color: rgba(130, 201, 154, 0.08);
 }
+
+.badge {
+
+    color: var(--color-featured-blue);
+}
+
+.badge-destacado {
+    text-decoration: underline;
+}
+
 
 
 .contenedor-entidades {

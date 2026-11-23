@@ -127,12 +127,15 @@ templ EmprendimientoList(items []services.EmprendimientoResponse) {
 }
 
 // EmprendimientosPage es el componente de página principal para Emprendimientos que compone Layout, Form y List.
-templ EmprendimientosPage(items []services.EmprendimientoResponse) {
+templ EmprendimientosPage(items []services.EmprendimientoResponse, query string) {
 	@Layout("Emprendimientos") {
 		<h2>Gestión de Emprendimientos</h2>
 		<div class="layout-principal">
 			@EmprendimientoForm()
-			@EmprendimientoList(items)
+			<div class="seccion-listado">
+				@SearchBar("/emprendimientos", "#lista-emprendimientos", query, "Buscar por nombre, rubro o descripción...")
+				@EmprendimientoList(items)
+			</div>
 		</div>
 	}
 }

@@ -132,3 +132,26 @@ func TestPublicacionList_WithItems(t *testing.T) {
 		}
 	}
 }
+
+func TestPublicacionesPage(t *testing.T) {
+	var buf bytes.Buffer
+	err := PublicacionesPage([]sqlc.Publicacione{}, "promo").Render(context.Background(), &buf)
+	if err != nil {
+		t.Fatalf("error rendering PublicacionesPage: %v", err)
+	}
+
+	html := buf.String()
+	expectedSubstrings := []string{
+		"Gestión de Publicaciones",
+		`hx-get="/publicaciones"`,
+		`hx-trigger="keyup changed delay:500ms, search"`,
+		`value="promo"`,
+		`hx-post="/publicaciones"`,
+	}
+
+	for _, sub := range expectedSubstrings {
+		if !strings.Contains(html, sub) {
+			t.Errorf("expected html to contain '%s', got: %s", sub, html)
+		}
+	}
+}

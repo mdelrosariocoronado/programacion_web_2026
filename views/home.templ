@@ -3,7 +3,7 @@ package views
 // HomePage es la página de inicio del Portal de Emprendimientos.
 templ HomePage() {
 	@Layout("Inicio") {
-		<section class="bloque-formulario" style="z">
+		<section class="bloque-formulario">
 			<article>
 				<h1 style="border-left: none; padding-left: 0;">Bienvenido al Portal de Emprendimientos</h1>
 				<p>Red centralizada de emprendimientos en Tandil. Conectamos clientes con productos y servicios locales.</p>
@@ -31,6 +31,13 @@ templ HomePage() {
 					<h3>Publicaciones</h3>
 					<p>Explorá los productos, servicios y promociones publicadas.</p>
 					<a href="/publicaciones" class="btn-principal" style="display: inline-block; margin: 20px; text-decoration: none;">Ver Publicaciones</a>
+				</article>
+
+				<article>
+					<img src="/static/images/suscripcion.png" alt="Suscripciones" style="width: 60px; margin-bottom: 1rem;"/>
+					<h3>Suscripciones</h3>
+					<p>Elegí un usuario y suscribite a los emprendimientos locales.</p>
+					<a href="/suscripciones" class="btn-principal" style="display: inline-block; margin: 20px; text-decoration: none;">Ver Suscripciones</a>
 				</article>
 
 			</div>

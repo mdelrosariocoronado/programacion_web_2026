@@ -12,6 +12,8 @@ templ Layout(title string) {
 			<!-- Estilos del Sistema de Diseño (styles.css) -->
 			<link rel="stylesheet" type="text/css" href="/static/styles.css"/>
 
+			<!-- Permite que HTMX intercambie respuestas 4xx/5xx redirigidas a #htmx-error -->
+			<meta name="htmx-config" content={`{"responseHandling":[{"code":"204","swap":false},{"code":"[23]..","swap":true},{"code":"[45]..","swap":true,"error":true}]}`}/>
 			<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 		</head>
 		<body>
@@ -20,17 +22,40 @@ templ Layout(title string) {
 				<div>
 					<h1>PORTAL DE EMPRENDIMIENTOS</h1>
 					<p> Red centralizada de emprendimientos en Tandil. Para conectar clientes con productos/servicios.</p>
-					<nav class="contenedor-nav">
+					<nav class="contenedor-nav" hx-boost="true">
 					 	<a href="/">Inicio </a> 
 						<a href="/emprendimientos">Emprendimientos</a>
 						<a href="/usuarios">Usuarios</a>
 						<a href="/publicaciones">Publicaciones</a>
+						<a href="/suscripciones">Suscripciones</a>
 					</nav>
 				</div>
 			</header>
 			<main class="contenedor-contenido container">
+				<div id="htmx-error" class="htmx-error" role="alert"></div>
 				{ children... }
 			</main>
 		</body>
 	</html>
+}
+
+templ ErrorBannerOOB() {
+	<div id="htmx-error" class="htmx-error" role="alert" hx-swap-oob="true"></div>
+}
+
+templ SearchBar(endpoint, target, query, placeholder string) {
+	<div class="buscador-listado">
+		<input
+			type="search"
+			name="q"
+			value={ query }
+			placeholder={ placeholder }
+			aria-label={ placeholder }
+			hx-get={ endpoint }
+			hx-trigger="keyup changed delay:500ms, search"
+			hx-target={ target }
+			hx-swap="outerHTML"
+			hx-push-url="true"
+		/>
+	</div>
 }
