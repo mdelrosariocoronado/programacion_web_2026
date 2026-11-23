@@ -19,7 +19,9 @@ func TestPublicacionForm(t *testing.T) {
 
 	html := buf.String()
 	expectedSubstrings := []string{
-		`<form method="POST" action="/publicaciones">`,
+		`hx-post="/publicaciones"`,
+		`hx-target="#lista-publicaciones"`,
+		`hx-swap="outerHTML"`,
 		`name="id_emprendimiento"`,
 		`name="titulo"`,
 		`<select name="tipo"`,
@@ -29,6 +31,21 @@ func TestPublicacionForm(t *testing.T) {
 	}
 
 	for _, sub := range expectedSubstrings {
+		if !strings.Contains(html, sub) {
+			t.Errorf("expected html to contain '%s', got: %s", sub, html)
+		}
+	}
+}
+
+func TestPublicacionFormOOB(t *testing.T) {
+	var buf bytes.Buffer
+	err := PublicacionFormOOB().Render(context.Background(), &buf)
+	if err != nil {
+		t.Fatalf("error rendering PublicacionFormOOB: %v", err)
+	}
+
+	html := buf.String()
+	for _, sub := range []string{`id="form-publicaciones"`, `hx-swap-oob="true"`, `hx-post="/publicaciones"`} {
 		if !strings.Contains(html, sub) {
 			t.Errorf("expected html to contain '%s', got: %s", sub, html)
 		}
@@ -93,6 +110,7 @@ func TestPublicacionList_WithItems(t *testing.T) {
 	}
 
 	expectedSubstrings := []string{
+		`id="lista-publicaciones"`,
 		"Promo 2x1",
 		"promocion",
 		"10",
@@ -102,6 +120,10 @@ func TestPublicacionList_WithItems(t *testing.T) {
 		"servicio",
 		"20",
 		"-", // fallback for null Precio and Contenido
+		`hx-delete="/publicaciones/1"`,
+		`hx-delete="/publicaciones/2"`,
+		`hx-target="closest tr"`,
+		`hx-swap="outerHTML"`,
 	}
 
 	for _, sub := range expectedSubstrings {

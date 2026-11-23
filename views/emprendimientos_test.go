@@ -18,7 +18,9 @@ func TestEmprendimientoForm(t *testing.T) {
 
 	html := buf.String()
 	expectedSubstrings := []string{
-		`<form method="POST" action="/emprendimientos">`,
+		`hx-post="/emprendimientos"`,
+		`hx-target="#lista-emprendimientos"`,
+		`hx-swap="outerHTML"`,
 		`name="nombre"`,
 		`name="rubro"`,
 		`name="descripcion"`,
@@ -28,6 +30,21 @@ func TestEmprendimientoForm(t *testing.T) {
 	}
 
 	for _, sub := range expectedSubstrings {
+		if !strings.Contains(html, sub) {
+			t.Errorf("expected html to contain '%s', got: %s", sub, html)
+		}
+	}
+}
+
+func TestEmprendimientoFormOOB(t *testing.T) {
+	var buf bytes.Buffer
+	err := EmprendimientoFormOOB().Render(context.Background(), &buf)
+	if err != nil {
+		t.Fatalf("error rendering EmprendimientoFormOOB: %v", err)
+	}
+
+	html := buf.String()
+	for _, sub := range []string{`id="form-emprendimientos"`, `hx-swap-oob="true"`, `hx-post="/emprendimientos"`} {
 		if !strings.Contains(html, sub) {
 			t.Errorf("expected html to contain '%s', got: %s", sub, html)
 		}
@@ -79,6 +96,7 @@ func TestEmprendimientoList_WithItems(t *testing.T) {
 	}
 
 	expectedSubstrings := []string{
+		`id="lista-emprendimientos"`,
 		"Cafetería Las Orquídeas",
 		"Gastronomía",
 		"Café de especialidad en Tandil",
@@ -87,6 +105,10 @@ func TestEmprendimientoList_WithItems(t *testing.T) {
 		"Artesanías",
 		"badge-activo",
 		"badge-inactivo",
+		`hx-delete="/emprendimientos/1"`,
+		`hx-delete="/emprendimientos/2"`,
+		`hx-target="closest tr"`,
+		`hx-swap="outerHTML"`,
 	}
 
 	for _, sub := range expectedSubstrings {
@@ -106,7 +128,8 @@ func TestEmprendimientosPage(t *testing.T) {
 	html := buf.String()
 	expectedSubstrings := []string{
 		"Gestión de Emprendimientos",
-		`<form method="POST" action="/emprendimientos">`,
+		`htmx.org`,
+		`hx-post="/emprendimientos"`,
 		"No hay emprendimientos registrados todavía.",
 	}
 

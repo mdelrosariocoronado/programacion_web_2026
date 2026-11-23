@@ -60,4 +60,16 @@ func TestEmprendimientoHandler_Validaciones(t *testing.T) {
 			t.Errorf("Se esperaba código %d con nombre vacío, se obtuvo %d", http.StatusBadRequest, rr.Code)
 		}
 	})
+
+	t.Run("DeleteFromHTMX falla con ID inválido", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/emprendimientos/abc", nil)
+		req.SetPathValue("id", "abc")
+		rr := httptest.NewRecorder()
+
+		handler.DeleteFromHTMX(rr, req)
+
+		if rr.Code != http.StatusBadRequest {
+			t.Errorf("Se esperaba código %d con ID inválido, se obtuvo %d", http.StatusBadRequest, rr.Code)
+		}
+	})
 }

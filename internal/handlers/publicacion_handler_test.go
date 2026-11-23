@@ -274,7 +274,7 @@ func TestPublicacionHandler_CreateFromForm(t *testing.T) {
 	mockSvc := &mockPublicacionService{}
 	handler := NewPublicacionHandler(mockSvc)
 
-	t.Run("exito_303_SeeOther_y_redirect", func(t *testing.T) {
+	t.Run("exito_200_OK_fragmento_lista_y_form_OOB", func(t *testing.T) {
 		formData := "id_emprendimiento=1&titulo=Promo+Cafe&tipo=promocion&precio=150.00"
 		req := httptest.NewRequest(http.MethodPost, "/publicaciones", strings.NewReader(formData))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -282,11 +282,15 @@ func TestPublicacionHandler_CreateFromForm(t *testing.T) {
 		rr := httptest.NewRecorder()
 		handler.CreateFromForm(rr, req)
 
-		if rr.Code != http.StatusSeeOther {
-			t.Errorf("Se esperaba código %d, se obtuvo %d", http.StatusSeeOther, rr.Code)
+		if rr.Code != http.StatusOK {
+			t.Errorf("Se esperaba código %d, se obtuvo %d", http.StatusOK, rr.Code)
 		}
-		if loc := rr.Header().Get("Location"); loc != "/publicaciones" {
-			t.Errorf("Se esperaba redirección a '/publicaciones', se obtuvo '%s'", loc)
+		body := rr.Body.String()
+		if !strings.Contains(body, `id="lista-publicaciones"`) {
+			t.Errorf("Se esperaba el fragmento de lista de publicaciones, se obtuvo: %s", body)
+		}
+		if !strings.Contains(body, `hx-swap-oob="true"`) {
+			t.Errorf("Se esperaba el formulario OOB para limpiar los inputs, se obtuvo: %s", body)
 		}
 	})
 
@@ -300,6 +304,45 @@ func TestPublicacionHandler_CreateFromForm(t *testing.T) {
 
 		if rr.Code != http.StatusBadRequest {
 			t.Errorf("Se esperaba código %d ante id_emprendimiento inválido, se obtuvo %d", http.StatusBadRequest, rr.Code)
+		}
+	})
+}
+
+func TestPublicacionHandler_DeleteFromHTMX(t *testing.T) {
+	t.Run("exito_200_OK_vacio", func(t *testing.T) {
+		mockSvc := &mockPublicacionService{
+			deleteFunc: func(ctx context.Context, id int32) error {
+				return nil
+			},
+		}
+		handler := NewPublicacionHandler(mockSvc)
+
+		req := httptest.NewRequest(http.MethodDelete, "/publicaciones/1", nil)
+		req.SetPathValue("id", "1")
+		rr := httptest.NewRecorder()
+
+		handler.DeleteFromHTMX(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Errorf("Se esperaba código %d, se obtuvo %d", http.StatusOK, rr.Code)
+		}
+		if rr.Body.Len() != 0 {
+			t.Errorf("Se esperaba respuesta vacía para HTMX outerHTML swap, se obtuvo: %q", rr.Body.String())
+		}
+	})
+
+	t.Run("falla_400_con_id_invalido", func(t *testing.T) {
+		mockSvc := &mockPublicacionService{}
+		handler := NewPublicacionHandler(mockSvc)
+
+		req := httptest.NewRequest(http.MethodDelete, "/publicaciones/abc", nil)
+		req.SetPathValue("id", "abc")
+		rr := httptest.NewRecorder()
+
+		handler.DeleteFromHTMX(rr, req)
+
+		if rr.Code != http.StatusBadRequest {
+			t.Errorf("Se esperaba código %d ante ID inválido, se obtuvo %d", http.StatusBadRequest, rr.Code)
 		}
 	})
 }

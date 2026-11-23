@@ -92,7 +92,7 @@ func TestUserHandler_CreateFromForm(t *testing.T) {
 	mockService := &MockUserService{}
 	userHandler := NewUserHandler(mockService)
 
-	t.Run("exito_303_SeeOther_y_redirect", func(t *testing.T) {
+	t.Run("exito_200_OK_fragmento_lista_y_form_OOB", func(t *testing.T) {
 		formData := "nombre_completo=Carlos&email=carlos@example.com&clave=123456&rol=cliente&id_emprendimiento=5"
 		req := httptest.NewRequest(http.MethodPost, "/usuarios", strings.NewReader(formData))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -100,11 +100,15 @@ func TestUserHandler_CreateFromForm(t *testing.T) {
 		rr := httptest.NewRecorder()
 		userHandler.CreateFromForm(rr, req)
 
-		if rr.Code != http.StatusSeeOther {
-			t.Errorf("Se esperaba código %d, se obtuvo %d", http.StatusSeeOther, rr.Code)
+		if rr.Code != http.StatusOK {
+			t.Errorf("Se esperaba código %d, se obtuvo %d", http.StatusOK, rr.Code)
 		}
-		if loc := rr.Header().Get("Location"); loc != "/usuarios" {
-			t.Errorf("Se esperaba redirección a '/usuarios', se obtuvo '%s'", loc)
+		body := rr.Body.String()
+		if !strings.Contains(body, `id="lista-usuarios"`) {
+			t.Errorf("Se esperaba el fragmento de lista de usuarios, se obtuvo: %s", body)
+		}
+		if !strings.Contains(body, `hx-swap-oob="true"`) {
+			t.Errorf("Se esperaba el formulario OOB para limpiar los inputs, se obtuvo: %s", body)
 		}
 	})
 
@@ -118,6 +122,38 @@ func TestUserHandler_CreateFromForm(t *testing.T) {
 
 		if rr.Code != http.StatusBadRequest {
 			t.Errorf("Se esperaba código %d ante id_emprendimiento inválido, se obtuvo %d", http.StatusBadRequest, rr.Code)
+		}
+	})
+}
+
+func TestUserHandler_DeleteFromHTMX(t *testing.T) {
+	mockService := &MockUserService{}
+	userHandler := NewUserHandler(mockService)
+
+	t.Run("exito_200_OK_vacio", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/usuarios/1", nil)
+		req.SetPathValue("id", "1")
+		rr := httptest.NewRecorder()
+
+		userHandler.DeleteFromHTMX(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Errorf("Se esperaba código %d, se obtuvo %d", http.StatusOK, rr.Code)
+		}
+		if rr.Body.Len() != 0 {
+			t.Errorf("Se esperaba respuesta vacía para HTMX outerHTML swap, se obtuvo: %q", rr.Body.String())
+		}
+	})
+
+	t.Run("falla_400_con_id_invalido", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/usuarios/abc", nil)
+		req.SetPathValue("id", "abc")
+		rr := httptest.NewRecorder()
+
+		userHandler.DeleteFromHTMX(rr, req)
+
+		if rr.Code != http.StatusBadRequest {
+			t.Errorf("Se esperaba código %d ante ID inválido, se obtuvo %d", http.StatusBadRequest, rr.Code)
 		}
 	})
 }

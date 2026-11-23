@@ -19,7 +19,9 @@ func TestUsuarioForm(t *testing.T) {
 
 	html := buf.String()
 	expectedSubstrings := []string{
-		`<form method="POST" action="/usuarios">`,
+		`hx-post="/usuarios"`,
+		`hx-target="#lista-usuarios"`,
+		`hx-swap="outerHTML"`,
 		`name="nombre_completo"`,
 		`name="email"`,
 		`name="clave"`,
@@ -28,6 +30,21 @@ func TestUsuarioForm(t *testing.T) {
 	}
 
 	for _, sub := range expectedSubstrings {
+		if !strings.Contains(html, sub) {
+			t.Errorf("expected html to contain '%s', got: %s", sub, html)
+		}
+	}
+}
+
+func TestUsuarioFormOOB(t *testing.T) {
+	var buf bytes.Buffer
+	err := UsuarioFormOOB().Render(context.Background(), &buf)
+	if err != nil {
+		t.Fatalf("error rendering UsuarioFormOOB: %v", err)
+	}
+
+	html := buf.String()
+	for _, sub := range []string{`id="form-usuarios"`, `hx-swap-oob="true"`, `hx-post="/usuarios"`} {
 		if !strings.Contains(html, sub) {
 			t.Errorf("expected html to contain '%s', got: %s", sub, html)
 		}
@@ -85,6 +102,7 @@ func TestUsuarioList_WithItems(t *testing.T) {
 	}
 
 	expectedSubstrings := []string{
+		`id="lista-usuarios"`,
 		"Juan Perez",
 		"juan@example.com",
 		"cliente",
@@ -93,6 +111,10 @@ func TestUsuarioList_WithItems(t *testing.T) {
 		"maria@example.com",
 		"emprendedor",
 		"-",
+		`hx-delete="/usuarios/1"`,
+		`hx-delete="/usuarios/2"`,
+		`hx-target="closest tr"`,
+		`hx-swap="outerHTML"`,
 	}
 
 	for _, sub := range expectedSubstrings {
@@ -112,7 +134,8 @@ func TestUsuariosPage(t *testing.T) {
 	html := buf.String()
 	expectedSubstrings := []string{
 		"Gestión de Usuarios",
-		`<form method="POST" action="/usuarios">`,
+		`htmx.org`,
+		`hx-post="/usuarios"`,
 		"No hay usuarios registrados",
 	}
 
